@@ -7,11 +7,16 @@ ziplib : $(ricode)
 
 #compila ricode
 iterate : $(ricode)
-	g++ -c -o documento.o documento.cpp -I $(ricode)
-	g++ -o documento documento.o $(ricode)/CollectionReader.o $(ricode)/Document.o -lz
+	g++ -c -o index.o index.cpp -I $(ricode)
+	g++ -c -o colecao.o colecao.cpp -I $(ricode)
+	g++ -o index index.o colecao.o $(ricode)/CollectionReader.o $(ricode)/Document.o -lz
 
-clean:
+clean :
 	rm *.o
 	rm $(ricode)/*.o
+	rm index
 
 all : ziplib iterate
+
+run :
+	./index /Users/evelinamorim/Dropbox/UFMG/2014-1/RI/tp1/toyExample/ indexToCompressedColection.txt
