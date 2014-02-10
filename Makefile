@@ -1,15 +1,16 @@
 ricode = ../code/src/
 
 ziplib : $(ricode) 
-	g++ -c -o $(ricode)/CollectionReader.o $(ricode)/CollectionReader.cpp
-	g++ -c -o $(ricode)/CollectionWriter.o $(ricode)/CollectionWriter.cpp
-	g++ -c -o $(ricode)/Document.o $(ricode)/Document.cpp
+	g++ -c -o $(ricode)/CollectionReader.o $(ricode)/CollectionReader.cpp -g
+	g++ -c -o $(ricode)/CollectionWriter.o $(ricode)/CollectionWriter.cpp -g
+	g++ -c -o $(ricode)/Document.o $(ricode)/Document.cpp -g
 
 #compila ricode
 iterate : $(ricode)
-	g++ -c -o index.o index.cpp -I $(ricode)
-	g++ -c -o colecao.o colecao.cpp -I $(ricode)
-	g++ -o index index.o colecao.o $(ricode)/CollectionReader.o $(ricode)/Document.o -lz
+	g++ -c -o index.o index.cpp -I $(ricode) -g
+	g++ -c -o colecao.o colecao.cpp -I $(ricode) -g
+	g++ -c -o util.o util.cpp -I $(ricode) -g
+	g++ -o index index.o colecao.o util.o $(ricode)/CollectionReader.o $(ricode)/Document.o -lz -lhtmlcxx -g
 
 clean :
 	rm *.o
