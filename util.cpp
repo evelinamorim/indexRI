@@ -25,3 +25,24 @@ void converteParaMinusculo(string& s){
     transform(s.begin(), s.end(), s.begin(), ::tolower);
 }
 
+bool ehPontuacao(char c){
+    return (c == ';' || c == ':' || c == '.' || c == '?' || c == ',' || c == '!' || c==')' || c=='(' || c == '\n' || c == '\t' || c == '\r' || c == '-');
+}
+vector<string> tokenizar(string s){
+    string::iterator it = s.begin();
+    vector<string> v;
+
+    string palavra = "";
+
+    while(it!=s.end()){
+	if (*it == ' ' || ehPontuacao(*it)){
+	    if (palavra.size() > 0) v.push_back(palavra);
+	    palavra = "";
+	}else{
+	    palavra += *it;
+	}
+	it++;
+    }
+
+    return v;
+}

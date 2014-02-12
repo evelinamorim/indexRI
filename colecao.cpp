@@ -25,6 +25,8 @@
 #include <vector>
 #include <sstream>
 #include <unordered_map>
+#include <cstdio>
+#include <regex>
 
 using namespace std;
 using namespace RICPNS;
@@ -51,7 +53,7 @@ void Colecao::ler(string dirEntrada,string nomeIndice){
     while(leitor->getNextDocument(doc)){
 
 	
-	//cout << "[" << doc.getText() << "]" << endl;
+	cout << "[" << doc.getURL() << "]" << endl;
 	tree<htmlcxx::HTML::Node> dom = parser.parseTree(doc.getText());
 
 	lerArvoreDom(dom);
@@ -66,24 +68,53 @@ void Colecao::ler(string dirEntrada,string nomeIndice){
 void Colecao::lerArvoreDom(tree<htmlcxx::HTML::Node> dom){
     tree<htmlcxx::HTML::Node>::iterator it = dom.begin();
     tree<htmlcxx::HTML::Node>::iterator end = dom.end();
-    for (; it != end; ++it)
+
+    int i = 0;
+    for (; it != end; ++it,i++)
     {  
-	if (it->text().length()>0){
-	    istringstream iss(it->text());
-	    string palavra;
+	    //aparentemente existe um header em toda pagina html
+	    //entao eu ignoro este header aqui
+	    if (i == 1) continue;
 
-	    while(iss >> palavra){
-		converteParaMinusculo(palavra);
+	    bool isscript;
+	    string tag = it->tagName();
 
-		int& valor = vocabulario[palavra];
+	    converteParaMinusculo(tag);
 
-		//TODO: porque ele esta pegando algumas coisas de html?
-		if (valor == 0){
-		    cout << "Palavra: " << palavra << " Codigo: " << contaPalavras << endl;
-	           vocabulario[palavra] = contaPalavras;
-		   contaPalavras++;
-		}
+	    if (it->isTag()==1){
+		if (tag=="script") isscript = true;
+	        else isscript = false;
 	    }
-	}
+
+	    //cout << "(1) Tag: " << tag << endl; 
+
+	    if (it->isComment()==0 && it->isTag()==0 && isscript==0){
+
+		vector<string> listaPalavras = tokenizar(it->text());
+		vector<string>::iterator it = listaPalavras.begin();
+
+
+	       /*cout << "------------------------------------------" << endl;
+	        cout << "(2) Tag: " <<  tag << endl;
+	        cout << it->text() << endl;
+
+	        cout << "------------------------------------------" << endl;*/
+
+
+	        while(it!=listaPalavras.end()){
+		   converteParaMinusculo(*it);
+
+		   int& valor = vocabulario[*it];
+
+		   //TODO: pegar offset do no + offset da palavra
+		   if (valor == 0){
+		       cout << "Palavra: " << *it << " Codigo: " << contaPalavras << endl;
+	               vocabulario[*it] = contaPalavras;
+		       contaPalavras++;
+		   }
+		   it++;
+	        }
+	    }
+	
     }
 }

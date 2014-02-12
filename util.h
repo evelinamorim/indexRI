@@ -19,7 +19,13 @@
 
 #include <algorithm>
 #include <string>
+#include <vector>
 
 using namespace std;
 
 void converteParaMinusculo(string& s);
+
+vector<string> tokenizar(string s);
+
+bool ehPontuacao(char c);
+
