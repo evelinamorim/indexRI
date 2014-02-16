@@ -46,3 +46,32 @@ vector<string> tokenizar(string s){
 
     return v;
 }
+
+
+bool arquivoExiste(const string nomeArquivo){
+    struct stat buf;
+
+    if (stat(nomeArquivo.c_str(),&buf) != 1) return true;
+    return false;
+}
+
+int para_codigo_gamma(int x){
+    int lpiso = floor(log2(x));
+
+    int cunario = para_codigo_unario(lpiso+1);
+    int pbinaria = x-pow(2,lpiso);
+
+    int cgamma = cunario;
+    cgamma = cgamma << lpiso;
+    cgamma |= pbinaria;
+    return cgamma;
+}
+
+int para_codigo_unario(int x){
+    //dado um numero inteiro escreve um codigo unario
+    int y = 0;
+    for(int i=1;i<x;i++){
+	y |= (1 << i);
+    }
+    return y;
+}

@@ -20,6 +20,8 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+#include <sys/stat.h>
+#include <cmath>
 
 using namespace std;
 
@@ -28,4 +30,6 @@ void converteParaMinusculo(string& s);
 vector<string> tokenizar(string s);
 
 bool ehPontuacao(char c);
+
+bool arquivoExiste(const string nomeArquivo);
 
