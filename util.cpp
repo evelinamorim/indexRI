@@ -67,6 +67,7 @@ int para_codigo_gamma(int x){
     return cgamma;
 }
 
+//TODO: posso alocar os bytes conforme eu precisar para a compressao com char?
 int para_codigo_unario(int x){
     //dado um numero inteiro escreve um codigo unario
     int y = 0;

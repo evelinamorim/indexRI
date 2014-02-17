@@ -54,7 +54,7 @@ void Colecao::ler(string dirEntrada,string nomeIndice){
 
 	
 	cout << "[" << doc.getURL() << "]" << endl;
-	tree<htmlcxx::HTML::Node> dom = parser.parseTree(doc.getText());
+	tree<htmlcxx::HTML::Node> dom = parser.parseTree(doc.getText(),i);
 
 	lerArvoreDom(dom);
 	//cout << dom << endl;
@@ -65,11 +65,17 @@ void Colecao::ler(string dirEntrada,string nomeIndice){
     delete leitor;
 }
 
-void Colecao::lerArvoreDom(tree<htmlcxx::HTML::Node> dom){
+void Colecao::lerArvoreDom(tree<htmlcxx::HTML::Node> dom,int idArvore){
     tree<htmlcxx::HTML::Node>::iterator it = dom.begin();
     tree<htmlcxx::HTML::Node>::iterator end = dom.end();
 
+    //para guardar relacao (termo,lista_posicoes_doc)
+    unordered_map<int,vector<int>> termos_pos;
+
     int i = 0;
+    //contador para saber em que posicao esta uma dada palavra
+    int palavraPos = 0; 
+
     for (; it != end; ++it,i++)
     {  
 	    //aparentemente existe um header em toda pagina html
@@ -86,7 +92,6 @@ void Colecao::lerArvoreDom(tree<htmlcxx::HTML::Node> dom){
 	        else isscript = false;
 	    }
 
-	    //cout << "(1) Tag: " << tag << endl; 
 
 	    if (it->isComment()==0 && it->isTag()==0 && isscript==0){
 
@@ -94,27 +99,48 @@ void Colecao::lerArvoreDom(tree<htmlcxx::HTML::Node> dom){
 		vector<string>::iterator it = listaPalavras.begin();
 
 
-	       /*cout << "------------------------------------------" << endl;
-	        cout << "(2) Tag: " <<  tag << endl;
-	        cout << it->text() << endl;
-
-	        cout << "------------------------------------------" << endl;*/
 
 
 	        while(it!=listaPalavras.end()){
 		   converteParaMinusculo(*it);
 
+		   palavraPos++;
+
 		   int& valor = vocabulario[*it];
 
-		   //TODO: pegar offset do no + offset da palavra
 		   if (valor == 0){
-		       cout << "Palavra: " << *it << " Codigo: " << contaPalavras << endl;
 	               vocabulario[*it] = contaPalavras;
+		       termos_pos[contaPalavras].push_back(palavraPos);
 		       contaPalavras++;
+		   }else{
+		       //TODO: esta correto esta representacao para gap?
+		       int gap = termo_pos[vocabulario[*it].size()-1]-palavraPos;
+		       termos_pos[vocabulario[*it]].push_back(gap);
 		   }
 		   it++;
 	        }
 	    }
 	
+    }
+}
+
+void Colecao::armazenaTermosDoc(unordered_map<int,vector<int>> termos_pos,int doc){
+    //dado o codigo do item lexical armazena em disco o 
+    //lexical
+
+    unordered_map<int,vector<int>>::iterator it_termo = termos_pos.begin();
+
+    while(it_termo != termos_pos.end()){
+       armazenaTermo(it_termo->first,it_termo->second,doc);
+       ++it_termo;
+    }
+}
+
+void Colecao::armazenaTermo(int lex,int doc,vector<int> posicoes){
+
+    //tem que verificar se o arquivo existe para nao sobrescrever
+    ofstream arquivo(nomeArquivoIndice,ios::out|ios::binary);
+    if (arquivo.good()){
+	arquivo.write();
     }
 }

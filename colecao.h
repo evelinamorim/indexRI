@@ -29,13 +29,17 @@ class Colecao{
     //TODO: nao carregar tudo na memoria?
     //vector<Documento> lista;
 
+    
     unordered_map<string,int> vocabulario;
     int contaPalavras;
+    const string nomeArquivoIndice = "index.bin";
 
     public:
     Colecao();
     void ler(string dirEntrada,string nomeIndice);
     void lerArvoreDom(tree<htmlcxx::HTML::Node> arvoreDom);
     vector<string> lerLexicais(string sentenca);
+    void Colecao::armazenaTermosDoc(unordered_map<int,vector<int>> termos_pos,int doc);
+    void Colecao::armazenaTermo(int lex,int doc,vector<int> posicoes);
 };
 
