@@ -55,19 +55,19 @@ bool arquivoExiste(const string nomeArquivo){
     return false;
 }
 
-int para_codigo_gamma(int x){
+void para_codigo_gamma(unsigned int x,unsigned int& y,unsigned int& ny){
+    ny = 0;
     int lpiso = floor(log2(x));
 
+    ny += ny + (2*lpiso) + 1;
     int cunario = para_codigo_unario(lpiso+1);
     int pbinaria = x-pow(2,lpiso);
 
-    int cgamma = cunario;
-    cgamma = cgamma << lpiso;
-    cgamma |= pbinaria;
-    return cgamma;
+    y = cunario;
+    y = y << lpiso;
+    y |= pbinaria;
 }
 
-//TODO: posso alocar os bytes conforme eu precisar para a compressao com char?
 int para_codigo_unario(int x){
     //dado um numero inteiro escreve um codigo unario
     int y = 0;

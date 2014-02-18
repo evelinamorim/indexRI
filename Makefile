@@ -12,6 +12,11 @@ iterate : $(ricode)
 	g++ -c -o util.o util.cpp -I $(ricode) -g
 	g++ -o index index.o colecao.o util.o $(ricode)/CollectionReader.o $(ricode)/Document.o -lz -lhtmlcxx -g
 
+escreve:
+	g++ -c -o util.o util.cpp -I $(ricode) -g
+	g++ -c -o escreve.o escreve.cpp -I $(ricode) -g
+	g++ -o escreve escreve.o util.o -g
+
 clean :
 	rm *.o
 	rm $(ricode)/*.o

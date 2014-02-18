@@ -33,3 +33,6 @@ bool ehPontuacao(char c);
 
 bool arquivoExiste(const string nomeArquivo);
 
+int para_codigo_unario(int x);
+
+void para_codigo_gamma(unsigned int x,unsigned int& y,unsigned int &ny);
