@@ -76,3 +76,52 @@ int para_codigo_unario(int x){
     }
     return y;
 }
+
+unsigned int unario_para_int(unsigned int x){
+    unsigned int y = x;
+
+    unsigned int cbits = 0;
+    for(int i=31;i>=0;i--){
+	 if ((x & (1 << i))!=0){
+	     cbits++;
+	 }else{
+	     if (cbits!=0) break;
+	 }
+    }
+
+    return cbits+1;
+}
+
+unsigned int gamma_para_int(unsigned int& x){
+
+    unsigned int cu = unario_para_int(x);
+    int deslocamento = 32-(2*cu-1);
+
+    unsigned int y = x;
+    int cbits;
+    cbits = 0;
+
+    //zerando a parte unaria
+    int pos_cb;
+    for(int i=31;i>=(31-cu-1);i--){
+	 if ((x & (1 << i))!=0){
+	     y &= ~(1 << i);
+	     cbits++;
+	 }else{
+	     if (cbits!=0){
+		 pos_cb=i-1;
+		 break;
+	     } 
+	 }
+    }
+
+    unsigned int cb = y >> deslocamento;
+
+    unsigned int numeroint = pow(2,cu-1) + cb;
+
+    //zerando a parte binaria
+    for(int i=pos_cb;i>(pos_cb-(cu-1));i--) y &= ~(1 << i);
+
+
+    return numeroint;
+}

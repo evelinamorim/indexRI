@@ -113,7 +113,6 @@ void Colecao::lerArvoreDom(tree<htmlcxx::HTML::Node> dom,int idArvore){
 		       termos_pos[contaPalavras].push_back(palavraPos);
 		       contaPalavras++;
 		   }else{
-		       //TODO: esta correto esta representacao para gap?
 		       int gap = termo_pos[vocabulario[*it].size()-1]-palavraPos;
 		       termos_pos[vocabulario[*it]].push_back(gap);
 		   }

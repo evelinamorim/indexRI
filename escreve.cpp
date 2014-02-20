@@ -27,32 +27,35 @@ Escreve::Escreve(string narquivo){
     nome_arquivo = narquivo;
 }
 
-void Escreve::escreve_lista(int lex,int doc,vector<unsigned int> v){
+int Escreve::escreve_tripla(int lex,int doc,vector<unsigned int> v){
+
+    //TODO: separar por <termo,doc,v[i]>
     ofstream arquivo (nome_arquivo, ios::out|ios::binary|ios::app);
+    int tam_lista = 0;//o tamanho da lista no arquivo
+
 
     if (arquivo.is_open()){
 
-	//TODO: compactar lex, doc e tamv?
-	arquivo.write((char*) &lex,sizeof(int));
-	arquivo.write((char*) &doc,sizeof(int));
-
 	int tamv = v.size();
+        carrega_buffer(tamv);
 
-	buffer = new unsigned int[tamv];
-	arquivo.write((char*) &tamv,sizeof(int));
 	vector<unsigned int>::iterator it;
 
 	for(it=v.begin();it!=v.end();it++){
+	    escreve_numero(lex);
+	    escreve_numero(doc);
 	    escreve_numero(*it);
 	}
 
 	escreve_buffer(arquivo);
 
+	tam_lista = arquivo.tellp();
+
         arquivo.close();
-	delete[] buffer;
     }else{
-	cout << "Colecao::escreve_lista::Unable to open file" << endl;
+	cout << "Colecao::escreve_tripla::Unable to open file" << endl;
     }
+    return tam_lista;
 }
 
 void Escreve::escreve_numero(unsigned int x){
@@ -81,10 +84,29 @@ void Escreve::escreve_numero(unsigned int x){
     }
 }
 
+void Escreve::carrega_buffer(int tamv){
+    buffer = new unsigned int[tamv];
+    //aqui deve carregar bits que sobraram em alguma escrita anterior
+    if (conta_bits !=0){
+	buffer[0] |= excedente;
+    }	
+}
+
 void Escreve::escreve_buffer(ofstream& arquivo){
     //quantidade de bytes que esta no buffer que devo escrever
     int nbytes = ceil(conta_bits/8);
+
+    if (conta_bits % 32 !=0 ){
+	excedente = buffer[nbytes];
+	nbytes = nbytes -1;
+	conta_bits = conta_bits % 32;
+    }else{
+        conta_bits = 0; 
+	excedente = 0;
+    }	
+	
     arquivo.write((char*) buffer,nbytes);
+    delete[] buffer;
 }
 
 int main(){
@@ -100,7 +122,7 @@ int main(){
 
     Escreve e = Escreve("teste_comp.bin");
 
-    e.escreve_lista(1,1,v);
+    e.escreve_tripla(1,1,v);
 
 
     return 0;

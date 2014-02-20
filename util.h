@@ -36,3 +36,7 @@ bool arquivoExiste(const string nomeArquivo);
 int para_codigo_unario(int x);
 
 void para_codigo_gamma(unsigned int x,unsigned int& y,unsigned int &ny);
+
+unsigned int unario_para_int(unsigned int x);
+
+unsigned int gamma_para_int(unsigned int& x);

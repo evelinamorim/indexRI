@@ -24,12 +24,15 @@ using namespace std;
 
 class Escreve{
     unsigned int* buffer;
+    //guarda o excedente do buffer
+    unsigned char excedente;
     int conta_bits;
     string nome_arquivo;
     public:
     Escreve(string narquivo);
-    void escreve_lista(int lex,int doc,vector<unsigned int> v);
+    int escreve_tripla(int lex,int doc,vector<unsigned int> v);
     void escreve_numero(unsigned int x);
+    void carrega_buffer(int tam_buffer);
     void escreve_buffer(ofstream& arquivo);
 };
 
