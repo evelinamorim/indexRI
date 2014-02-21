@@ -23,6 +23,8 @@
 #include <sys/stat.h>
 #include <cmath>
 
+#define TAM_BUFFER_READ 3
+
 using namespace std;
 
 void converteParaMinusculo(string& s);
@@ -37,6 +39,6 @@ int para_codigo_unario(int x);
 
 void para_codigo_gamma(unsigned int x,unsigned int& y,unsigned int &ny);
 
-unsigned int unario_para_int(unsigned int x);
+unsigned int unario_para_int(vector<unsigned int> x);
 
-unsigned int gamma_para_int(unsigned int& x);
+unsigned int gamma_para_int(vector<unsigned int> x,int& nx,int pos);

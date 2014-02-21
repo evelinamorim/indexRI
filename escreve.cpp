@@ -27,14 +27,28 @@ Escreve::Escreve(string narquivo){
     nome_arquivo = narquivo;
 }
 
+void Escreve::inicia_conta_bits(int cb){
+    conta_bits = cb;
+}
+
+void Escreve::inicia_excedente(int e){
+    excedente = e;
+}
+
+
 int Escreve::escreve_tripla(int lex,int doc,vector<unsigned int> v){
 
-    //TODO: separar por <termo,doc,v[i]>
     ofstream arquivo (nome_arquivo, ios::out|ios::binary|ios::app);
-    int tam_lista = 0;//o tamanho da lista no arquivo
 
+    int pos_arquivo;
 
     if (arquivo.is_open()){
+
+	if (conta_bits!=0){
+	    int pos_atual = floor(conta_bits/8);
+	    arquivo.seekp(pos_atual,ios::beg);
+	}
+
 
 	int tamv = v.size();
         carrega_buffer(tamv);
@@ -49,13 +63,13 @@ int Escreve::escreve_tripla(int lex,int doc,vector<unsigned int> v){
 
 	escreve_buffer(arquivo);
 
-	tam_lista = arquivo.tellp();
+	pos_arquivo = arquivo.tellp();
 
         arquivo.close();
     }else{
 	cout << "Colecao::escreve_tripla::Unable to open file" << endl;
     }
-    return tam_lista;
+    return pos_arquivo;
 }
 
 void Escreve::escreve_numero(unsigned int x){
@@ -74,18 +88,25 @@ void Escreve::escreve_numero(unsigned int x){
 	//quantidade de bits para escrever eh maior que a quantidade 
 	//disponivel no bucket atual
 	int deslocamento = ny - (32-j);
-	buffer[i] = buffer[i] | (y>>deslocamento);
-	buffer[i+1] = buffer[i+1] | (y << (32-deslocamento));
+
+	for(int k=0;k<deslocamento;k++) buffer[i] &= ~(1<<k);
+	buffer[i] |= (y>>deslocamento);
+
+	for(int k=31;k<(32-deslocamento);k--) buffer[i+1] &= ~(1<<k);
+	buffer[i+1] |= (y << (32-deslocamento));
 	conta_bits += ny;
     }else{
 	int deslocamento = (32-j)-ny;
-	buffer[i] = buffer[i] | (y << deslocamento);
+
+	for(int k=(32-j);k<deslocamento;k--) buffer[i] &= ~(1<<k);
+	buffer[i] |= (y << deslocamento);
 	conta_bits += ny;
     }
 }
 
 void Escreve::carrega_buffer(int tamv){
     buffer = new unsigned int[tamv];
+
     //aqui deve carregar bits que sobraram em alguma escrita anterior
     if (conta_bits !=0){
 	buffer[0] |= excedente;
@@ -95,6 +116,7 @@ void Escreve::carrega_buffer(int tamv){
 void Escreve::escreve_buffer(ofstream& arquivo){
     //quantidade de bytes que esta no buffer que devo escrever
     int nbytes = ceil(conta_bits/8);
+    int nint = ceil(conta_bits/32.0);
 
     if (conta_bits % 32 !=0 ){
 	excedente = buffer[nbytes];
@@ -104,8 +126,7 @@ void Escreve::escreve_buffer(ofstream& arquivo){
         conta_bits = 0; 
 	excedente = 0;
     }	
-	
-    arquivo.write((char*) buffer,nbytes);
+    arquivo.write((char*) buffer,nint*sizeof(int));
     delete[] buffer;
 }
 

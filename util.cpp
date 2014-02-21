@@ -16,9 +16,11 @@
  * =====================================================================================
  */
 
-
+#include <iostream>
+#include <cstdlib>
 #include "util.h"
 
+using namespace std;
 
 void converteParaMinusculo(string& s){
     /* COnverte uma string para minusculo */
@@ -77,34 +79,59 @@ int para_codigo_unario(int x){
     return y;
 }
 
-unsigned int unario_para_int(unsigned int x){
-    unsigned int y = x;
+unsigned int unario_para_int(vector<unsigned int> x,int pos){
+    //pegar unario a partir da posicao pos
 
     unsigned int cbits = 0;
-    for(int i=31;i>=0;i--){
-	 if ((x & (1 << i))!=0){
+    bool naoterminado = true;
+
+    for(int i=pos;i>=0;i--){
+	 if ((x.front() & (1 << i))!=0){
 	     cbits++;
+	     if (i==0 && naoterminado){
+		 x.erase(x.begin());
+	     }
 	 }else{
-	     if (cbits!=0) break;
-	 }
+	    naoterminado = false;
+            break;
+	 } 
     }
 
     return cbits+1;
 }
 
-unsigned int gamma_para_int(unsigned int& x){
+unsigned int gamma_para_int(vector<unsigned int> x,int& nx,int pos){
 
-    unsigned int cu = unario_para_int(x);
-    int deslocamento = 32-(2*cu-1);
+    //transformar de gamma para int a partir do bit pos
 
-    unsigned int y = x;
+    unsigned int cu;
+    int tamx = x.size();
+
+    cu = unario_para_int(x,pos);
+
+
+    nx = 2*cu-1;
+
+    unsigned int y = x.front();
     int cbits;
     cbits = 0;
+    int resto = cu;
+    int deslocamento = pos-(2*cu-1)+1;
 
     //zerando a parte unaria
-    int pos_cb;
-    for(int i=31;i>=(31-cu-1);i--){
-	 if ((x & (1 << i))!=0){
+
+    //neste caso a parte unaria esta dividida entre dois 
+    //inteiros, entao a posicao do numero lido atualmente volta 
+    //para o bit numero 31
+    if (tamx != x.size()){ 
+	resto = cu-pos-1;
+	deslocamento = pos-(cu-1+resto)+1;
+	pos = 31;
+    }
+
+    int pos_cb=31;
+    for(int i=pos;i>(pos-resto);i--){
+	 if ((x.front() & (1 << i))!=0){
 	     y &= ~(1 << i);
 	     cbits++;
 	 }else{
@@ -115,13 +142,35 @@ unsigned int gamma_para_int(unsigned int& x){
 	 }
     }
 
-    unsigned int cb = y >> deslocamento;
+    unsigned int cb;
+    //cout << "Deslocamento: " << deslocamento << endl;
+
+    //Neste caso a parte binaria esta dividida em duas partes
+    int qtd_bits_cb = cu-1;
+    if ((pos_cb-qtd_bits_cb)<0){
+	int qtd_bits_dir = fabs((pos_cb+1)-((int)cu-1));
+	qtd_bits_cb = qtd_bits_dir;
+
+        x.erase(x.begin());
+	//a primeira parte deste ou logico pega a primeira parte da parte
+	//binaria, e a segunda parte deve pegar a parte posterior do numero
+	//que acabou ficando em outro inteiro. Fazendo o ou logico
+	//consigo parte binaria
+	//cout << "1: " <<  y << " - "<< (y << (qtd_bits_dir)) << endl;
+	//cout << "2: " <<  x.front() << " - " <<  (x.front() >> 30) << endl;
+	cb = (y << (qtd_bits_dir)) | (x.front() >> (32-qtd_bits_dir));
+	pos_cb = 31;
+	y = x.front();
+    }
+    else cb = y >> (deslocamento);
 
     unsigned int numeroint = pow(2,cu-1) + cb;
 
     //zerando a parte binaria
-    for(int i=pos_cb;i>(pos_cb-(cu-1));i--) y &= ~(1 << i);
+    for(int i=pos_cb;i>(pos_cb-qtd_bits_cb);i--) y &= ~(1 << i);
 
+   // cout << " 1: " << y << endl << endl;
 
+    x[0] = y;
     return numeroint;
 }

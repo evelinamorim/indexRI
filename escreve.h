@@ -34,5 +34,7 @@ class Escreve{
     void escreve_numero(unsigned int x);
     void carrega_buffer(int tam_buffer);
     void escreve_buffer(ofstream& arquivo);
+    void inicia_conta_bits(int cb);
+    void inicia_excedente(int e);
 };
 
