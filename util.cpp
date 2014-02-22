@@ -79,17 +79,19 @@ int para_codigo_unario(int x){
     return y;
 }
 
-unsigned int unario_para_int(vector<unsigned int> x,int pos){
+unsigned int unario_para_int(vector<unsigned int>& x,int pos){
     //pegar unario a partir da posicao pos
 
     unsigned int cbits = 0;
     bool naoterminado = true;
 
-    for(int i=pos;i>=0;i--){
+    int i=pos;
+    for(;i>=0;i--){
 	 if ((x.front() & (1 << i))!=0){
 	     cbits++;
 	     if (i==0 && naoterminado){
 		 x.erase(x.begin());
+		 i=32;
 	     }
 	 }else{
 	    naoterminado = false;
@@ -100,7 +102,7 @@ unsigned int unario_para_int(vector<unsigned int> x,int pos){
     return cbits+1;
 }
 
-unsigned int gamma_para_int(vector<unsigned int> x,int& nx,int pos){
+unsigned int gamma_para_int(vector<unsigned int>& x,int& nx,int pos){
 
     //transformar de gamma para int a partir do bit pos
 
@@ -125,7 +127,9 @@ unsigned int gamma_para_int(vector<unsigned int> x,int& nx,int pos){
     //para o bit numero 31
     if (tamx != x.size()){ 
 	resto = cu-pos-1;
-	deslocamento = pos-(cu-1+resto)+1;
+	//pos+1: quantidade de bits na parte 1
+	//cu+1+resto: quantidade de bits na parte 2
+	deslocamento = 32-(cu-1+resto);
 	pos = 31;
     }
 
@@ -147,7 +151,7 @@ unsigned int gamma_para_int(vector<unsigned int> x,int& nx,int pos){
 
     //Neste caso a parte binaria esta dividida em duas partes
     int qtd_bits_cb = cu-1;
-    if ((pos_cb-qtd_bits_cb)<0){
+    if (((pos_cb+1)-qtd_bits_cb)<0){
 	int qtd_bits_dir = fabs((pos_cb+1)-((int)cu-1));
 	qtd_bits_cb = qtd_bits_dir;
 
@@ -171,6 +175,8 @@ unsigned int gamma_para_int(vector<unsigned int> x,int& nx,int pos){
 
    // cout << " 1: " << y << endl << endl;
 
-    x[0] = y;
+    //verificando se acabou o buffer sem precisar particionar
+    if ((pos+1)!=nx) x[0] = y;
+    else x.erase(x.begin());
     return numeroint;
 }

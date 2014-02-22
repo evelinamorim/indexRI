@@ -16,8 +16,11 @@ le:
 	g++ -c -o util.o util.cpp -I $(ricode) -g
 	g++ -c -o le.o le.cpp -I $(ricode) -g
 	g++ -o le le.o util.o -g
-limpa:
+limpale:
 	rm le
+	rm *.o
+limpaescreve:
+	rm escreve
 	rm *.o
 escreve:
 	g++ -c -o util.o util.cpp -I $(ricode) -g

@@ -103,7 +103,7 @@ int Le::ler_numero(){
 }
 
 int main(){
-    Le l = Le("teste_comp.bin");
+    Le l = Le("teste_comp5.bin");
     unsigned int lex,doc,pos;
 
     l.ler_tripla(lex,doc,pos);
@@ -113,7 +113,31 @@ int main(){
     l.ler_tripla(lex,doc,pos);
     cout << lex << " " << doc << " " << pos << endl;
     l.ler_tripla(lex,doc,pos);
+
     cout << lex << " " << doc << " " << pos << endl;
+    l.ler_tripla(lex,doc,pos);
+    cout << lex << " " << doc << " " << pos << endl;
+    l.ler_tripla(lex,doc,pos);
+    cout << lex << " " << doc << " " << pos << endl;
+    l.ler_tripla(lex,doc,pos);
+    cout << lex << " " << doc << " " << pos << endl;
+    l.ler_tripla(lex,doc,pos);
+    cout << lex << " " << doc << " " << pos << endl;
+
+    l.ler_tripla(lex,doc,pos);
+    cout << lex << " " << doc << " " << pos << endl;
+    l.ler_tripla(lex,doc,pos);
+    cout << lex << " " << doc << " " << pos << endl;
+    l.ler_tripla(lex,doc,pos);
+    cout << lex << " " << doc << " " << pos << endl;
+
+    l.ler_tripla(lex,doc,pos);
+    cout << lex << " " << doc << " " << pos << endl;
+    l.ler_tripla(lex,doc,pos);
+    cout << lex << " " << doc << " " << pos << endl;
+    l.ler_tripla(lex,doc,pos);
+    cout << lex << " " << doc << " " << pos << endl;
+
     l.ler_tripla(lex,doc,pos);
     cout << lex << " " << doc << " " << pos << endl;
     l.ler_tripla(lex,doc,pos);

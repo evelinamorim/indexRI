@@ -25,14 +25,20 @@ using namespace std;
 Escreve::Escreve(string narquivo){
     conta_bits = 0;
     nome_arquivo = narquivo;
+    excedente = new unsigned int[1];
+    *excedente = 0;
 }
 
 void Escreve::inicia_conta_bits(int cb){
     conta_bits = cb;
 }
 
-void Escreve::inicia_excedente(int e){
-    excedente = e;
+void Escreve::inicia_excedente(unsigned int e){
+    *excedente = e;
+}
+
+unsigned int Escreve::pega_excedente(){
+    return *excedente;
 }
 
 
@@ -89,9 +95,10 @@ void Escreve::escreve_numero(unsigned int x){
 	//disponivel no bucket atual
 	int deslocamento = ny - (32-j);
 
-	for(int k=0;k<deslocamento;k++) buffer[i] &= ~(1<<k);
-	buffer[i] |= (y>>deslocamento);
+	for(int k=0;k<(32-j);k++) buffer[i] &= ~(1<<k);
+	buffer[i] |= (y>>(deslocamento));
 
+	buffer[i+1] = 0;
 	for(int k=31;k<(32-deslocamento);k--) buffer[i+1] &= ~(1<<k);
 	buffer[i+1] |= (y << (32-deslocamento));
 	conta_bits += ny;
@@ -105,29 +112,41 @@ void Escreve::escreve_numero(unsigned int x){
 }
 
 void Escreve::carrega_buffer(int tamv){
-    buffer = new unsigned int[tamv];
-
+    buffer = new unsigned int[tamv]();
+    
     //aqui deve carregar bits que sobraram em alguma escrita anterior
     if (conta_bits !=0){
-	buffer[0] |= excedente;
+	buffer[0] |= *excedente;
     }	
 }
 
 void Escreve::escreve_buffer(ofstream& arquivo){
     //quantidade de bytes que esta no buffer que devo escrever
     int nbytes = ceil(conta_bits/8);
-    int nint = ceil(conta_bits/32.0);
+    int nint = floor(conta_bits/32.0);
 
+	for (int i=0;i<nint;i++) 
+	    cout << "buffer[" << i << "]: " << buffer[i] << endl;
     if (conta_bits % 32 !=0 ){
-	excedente = buffer[nbytes];
-	nbytes = nbytes -1;
+	*excedente = buffer[nint];
 	conta_bits = conta_bits % 32;
     }else{
         conta_bits = 0; 
-	excedente = 0;
+	*excedente = 0;
     }	
     arquivo.write((char*) buffer,nint*sizeof(int));
     delete[] buffer;
+}
+
+void Escreve::escreve_excedente(){
+    ofstream arquivo (nome_arquivo, ios::out|ios::binary|ios::app);
+    if (arquivo.is_open()){
+	arquivo.seekp (arquivo.end);
+        arquivo.write((char*) excedente,sizeof(int));
+	arquivo.close();
+    }else{
+	cout << "Escreve::escreve_excedente::Nao foi possivel abrir arquivo." << endl;
+    }
 }
 
 int main(){
@@ -140,10 +159,39 @@ int main(){
     v.push_back(7);
     v.push_back(9);
     v.push_back(11);
+    v.push_back(23);
 
-    Escreve e = Escreve("teste_comp.bin");
+    vector<unsigned int> v1;
+
+    v1.push_back(3);
+    v1.push_back(2);
+    v1.push_back(9);
+
+    vector<unsigned int> v2;
+
+    v2.push_back(31);
+    v2.push_back(27);
+    v2.push_back(96);
+
+    vector<unsigned int> v3;
+
+    v3.push_back(101);
+    v3.push_back(102);
+    v3.push_back(103);
+
+
+
+    Escreve e = Escreve("teste_comp5.bin");
 
     e.escreve_tripla(1,1,v);
+    e.escreve_tripla(1,2,v1);
+    e.escreve_tripla(2,4,v2);
+    e.escreve_tripla(100,100,v3);
+
+
+
+    if (e.pega_excedente()!=0)
+      e.escreve_excedente();
 
 
     return 0;

@@ -24,8 +24,9 @@ using namespace std;
 
 class Escreve{
     unsigned int* buffer;
+    vector<int> pilha_buffer;
     //guarda o excedente do buffer
-    unsigned char excedente;
+    unsigned int *excedente;
     int conta_bits;
     string nome_arquivo;
     public:
@@ -35,6 +36,8 @@ class Escreve{
     void carrega_buffer(int tam_buffer);
     void escreve_buffer(ofstream& arquivo);
     void inicia_conta_bits(int cb);
-    void inicia_excedente(int e);
+    void inicia_excedente(unsigned int e);
+    void escreve_excedente();
+    unsigned int pega_excedente();
 };
 
