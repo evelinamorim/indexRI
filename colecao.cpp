@@ -19,6 +19,7 @@
 #include "colecao.h"
 #include "CollectionReader.h"
 #include "util.h"
+#include "ordena.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -45,6 +46,8 @@ void Colecao::ler(string dirEntrada,string nomeIndice){
     CollectionReader* leitor = new CollectionReader(dirEntrada,nomeIndice);
     Document doc;
 
+    unordered_map<int,vector<int>> termos_pos;
+
     htmlcxx::HTML::ParserDom parser;
 
     doc.clear();
@@ -56,7 +59,10 @@ void Colecao::ler(string dirEntrada,string nomeIndice){
 	cout << "[" << doc.getURL() << "]" << endl;
 	tree<htmlcxx::HTML::Node> dom = parser.parseTree(doc.getText(),i);
 
-	lerArvoreDom(dom);
+	termos_pos = ler_arvore_dom(dom);
+	//TODO: indexacao de documento
+	armazena_termos_doc(termos_pos,i);
+	    
 	//cout << dom << endl;
 
 	++i;
@@ -65,7 +71,7 @@ void Colecao::ler(string dirEntrada,string nomeIndice){
     delete leitor;
 }
 
-void Colecao::lerArvoreDom(tree<htmlcxx::HTML::Node> dom,int idArvore){
+unordered_map<int,vector<int>> Colecao::ler_arvore_dom(tree<htmlcxx::HTML::Node> dom,int idArvore){
     tree<htmlcxx::HTML::Node>::iterator it = dom.begin();
     tree<htmlcxx::HTML::Node>::iterator end = dom.end();
 
@@ -121,25 +127,33 @@ void Colecao::lerArvoreDom(tree<htmlcxx::HTML::Node> dom,int idArvore){
 	    }
 	
     }
+
+    return termos_pos;
 }
 
-void Colecao::armazenaTermosDoc(unordered_map<int,vector<int>> termos_pos,int doc){
+void Colecao::armazena_termos_doc(unordered_map<int,vector<int>> termos_pos,int doc){
     //dado o codigo do item lexical armazena em disco o 
     //lexical
+    //TODO: utilizar objeto escrita para escrever os termos no documento
 
     unordered_map<int,vector<int>>::iterator it_termo = termos_pos.begin();
+    vector<int> v;
 
     while(it_termo != termos_pos.end()){
-       armazenaTermo(it_termo->first,it_termo->second,doc);
+
+	vector<int>::iterator it_pos;
+
+	for(it_pos=it_termo->second.begin();it_pos!=it_termo->second.end();it_pos++){
+            v.push_back(it_termo->first);
+	    v.push_back(doc);
+            v.push_back(*it_pos);
+
+	    escrita.escreve_tripla(v);
+
+            v.clear();
+	}
+	
        ++it_termo;
     }
 }
 
-void Colecao::armazenaTermo(int lex,int doc,vector<int> posicoes){
-
-    //tem que verificar se o arquivo existe para nao sobrescrever
-    ofstream arquivo(nomeArquivoIndice,ios::out|ios::binary);
-    if (arquivo.good()){
-	arquivo.write();
-    }
-}

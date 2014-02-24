@@ -30,8 +30,10 @@ class Le{
     int conta_bits;
     public:
     Le(string narquivo);
-    int ler_tripla(unsigned int& lex,unsigned int& doc,unsigned int& pos);
+    void inicia_nome_arquivo(string narquivo);
+    int ler_tripla(vector<unsigned int>& v,int nnum);
     int ler_numero();
-    void carrega_buffer(ifstream& arquivo);
+    void carrega_buffer(ifstream& arquivo,int nnum);
     int pega_conta_bits();
+    void inicia_conta_bits(int cb);
 };

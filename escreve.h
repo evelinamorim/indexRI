@@ -31,7 +31,9 @@ class Escreve{
     string nome_arquivo;
     public:
     Escreve(string narquivo);
-    int escreve_tripla(int lex,int doc,vector<unsigned int> v);
+    int pega_conta_bits();
+    string pega_nome_arquivo();
+    int escreve_tripla(vector<unsigned int> v);
     void escreve_numero(unsigned int x);
     void carrega_buffer(int tam_buffer);
     void escreve_buffer(ofstream& arquivo);

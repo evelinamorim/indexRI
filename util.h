@@ -23,7 +23,8 @@
 #include <sys/stat.h>
 #include <cmath>
 
-#define TAM_BUFFER_READ 3
+#ifndef __UTIL_H_
+#define __UTIL_H_
 
 using namespace std;
 
@@ -42,3 +43,5 @@ void para_codigo_gamma(unsigned int x,unsigned int& y,unsigned int &ny);
 unsigned int unario_para_int(vector<unsigned int>& x);
 
 unsigned int gamma_para_int(vector<unsigned int>& x,int& nx,int pos);
+
+#endif

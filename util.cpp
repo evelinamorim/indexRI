@@ -61,7 +61,7 @@ void para_codigo_gamma(unsigned int x,unsigned int& y,unsigned int& ny){
     ny = 0;
     int lpiso = floor(log2(x));
 
-    ny += ny + (2*lpiso) + 1;
+    ny = ny + (2*lpiso) + 1;
     int cunario = para_codigo_unario(lpiso+1);
     int pbinaria = x-pow(2,lpiso);
 

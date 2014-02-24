@@ -16,6 +16,7 @@
  * =====================================================================================
  */
 
+#include "escreve.h"
 
 #include <vector>
 #include <htmlcxx/html/ParserDom.h>
@@ -32,14 +33,15 @@ class Colecao{
     
     unordered_map<string,int> vocabulario;
     int contaPalavras;
+    const string nome_arquivo_vocabulario = "voc.txt"
     const string nomeArquivoIndice = "index.bin";
+    Escreve escrita(nomeArquivoIndice);
 
     public:
     Colecao();
     void ler(string dirEntrada,string nomeIndice);
-    void lerArvoreDom(tree<htmlcxx::HTML::Node> arvoreDom);
+    unordered_map<int,vector<int>> ler_arvore_dom(tree<htmlcxx::HTML::Node> arvoreDom);
     vector<string> lerLexicais(string sentenca);
-    void Colecao::armazenaTermosDoc(unordered_map<int,vector<int>> termos_pos,int doc);
-    void Colecao::armazenaTermo(int lex,int doc,vector<int> posicoes);
+    void Colecao::armazena_termos_doc(unordered_map<int,vector<int>> termos_pos,int doc);
 };
 

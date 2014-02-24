@@ -27,6 +27,17 @@ escreve:
 	g++ -c -o escreve.o escreve.cpp -I $(ricode) -g
 	g++ -o escreve escreve.o util.o -g
 
+ordena:
+	g++ -c -o util.o util.cpp -I $(ricode) -g
+	g++ -c -o escreve.o escreve.cpp -I $(ricode) -g
+	g++ -c -o le.o le.cpp -I $(ricode) -g
+	g++ -c -o ordena.o ordena.cpp -I $(ricode) -g
+	g++ -o ordena ordena.o util.o le.o escreve.o -g
+
+limpaordena:
+	rm ordena
+	rm *.o
+
 clean :
 	rm *.o
 	rm $(ricode)/*.o

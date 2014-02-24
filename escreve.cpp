@@ -33,6 +33,10 @@ void Escreve::inicia_conta_bits(int cb){
     conta_bits = cb;
 }
 
+int Escreve::pega_conta_bits(){
+    return conta_bits;
+}
+
 void Escreve::inicia_excedente(unsigned int e){
     *excedente = e;
 }
@@ -41,8 +45,12 @@ unsigned int Escreve::pega_excedente(){
     return *excedente;
 }
 
+string Escreve::pega_nome_arquivo(){
+    return nome_arquivo;
+}
 
-int Escreve::escreve_tripla(int lex,int doc,vector<unsigned int> v){
+
+int Escreve::escreve_tripla(vector<unsigned int> v){
 
     ofstream arquivo (nome_arquivo, ios::out|ios::binary|ios::app);
 
@@ -50,26 +58,38 @@ int Escreve::escreve_tripla(int lex,int doc,vector<unsigned int> v){
 
     if (arquivo.is_open()){
 
-	if (conta_bits!=0){
+	/* TODO:Acho que nao vai fazer diferenca, considerando 
+	 que esta no modo append e sempre escrevera no fim do 
+	 arquivo*/ 
+	/*if (conta_bits!=0){
 	    int pos_atual = floor(conta_bits/8);
 	    arquivo.seekp(pos_atual,ios::beg);
-	}
+	}else{
+	    arquivo.seekp(0,ios::beg);
+	}*/ 
 
 
+
+	//somando mais dois para alocar espaco no  buffer para lex e para doc
 	int tamv = v.size();
+
         carrega_buffer(tamv);
 
 	vector<unsigned int>::iterator it;
 
+
+
 	for(it=v.begin();it!=v.end();it++){
-	    escreve_numero(lex);
-	    escreve_numero(doc);
 	    escreve_numero(*it);
 	}
+
+	// cout << "Numero de bits: " << conta_bits << endl;
 
 	escreve_buffer(arquivo);
 
 	pos_arquivo = arquivo.tellp();
+	// cout << "Posicao arquivo: " << pos_arquivo << endl;
+
 
         arquivo.close();
     }else{
@@ -80,7 +100,8 @@ int Escreve::escreve_tripla(int lex,int doc,vector<unsigned int> v){
 
 void Escreve::escreve_numero(unsigned int x){
     //guarda numero em um buffer
-    unsigned int ny,y;
+    unsigned int ny = 0;
+    unsigned int y;
     para_codigo_gamma(x,y,ny);
 
 
@@ -104,7 +125,6 @@ void Escreve::escreve_numero(unsigned int x){
 	conta_bits += ny;
     }else{
 	int deslocamento = (32-j)-ny;
-
 	for(int k=(32-j);k<deslocamento;k--) buffer[i] &= ~(1<<k);
 	buffer[i] |= (y << deslocamento);
 	conta_bits += ny;
@@ -113,10 +133,15 @@ void Escreve::escreve_numero(unsigned int x){
 
 void Escreve::carrega_buffer(int tamv){
     buffer = new unsigned int[tamv]();
+    for(int i=0;i<tamv;i++){
+       buffer[i]=0;
+    }	    
     
     //aqui deve carregar bits que sobraram em alguma escrita anterior
     if (conta_bits !=0){
+	buffer[0] = 0;
 	buffer[0] |= *excedente;
+	*excedente = 0;
     }	
 }
 
@@ -149,7 +174,7 @@ void Escreve::escreve_excedente(){
     }
 }
 
-int main(){
+/* int main(){
     vector<unsigned int> v;
 
     v.push_back(10);
@@ -195,6 +220,6 @@ int main(){
 
 
     return 0;
-}
+}*/
 
 
