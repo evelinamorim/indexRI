@@ -150,8 +150,8 @@ void Escreve::escreve_buffer(ofstream& arquivo){
     int nbytes = ceil(conta_bits/8);
     int nint = floor(conta_bits/32.0);
 
-	for (int i=0;i<nint;i++) 
-	    cout << "buffer[" << i << "]: " << buffer[i] << endl;
+	//for (int i=0;i<nint;i++) 
+	  //  cout << "buffer[" << i << "]: " << buffer[i] << endl;
     if (conta_bits % 32 !=0 ){
 	*excedente = buffer[nint];
 	conta_bits = conta_bits % 32;

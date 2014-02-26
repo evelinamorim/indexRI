@@ -22,6 +22,9 @@
 
 using namespace std;
 
+#ifndef __ESCREVE_H_
+#define __ESCREVE_H_
+
 class Escreve{
     unsigned int* buffer;
     vector<int> pilha_buffer;
@@ -43,3 +46,4 @@ class Escreve{
     unsigned int pega_excedente();
 };
 
+#endif

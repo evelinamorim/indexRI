@@ -182,8 +182,47 @@ void Ordena::ordena_todas_runs(){
 
 }
 
-void Ordena::executa(unordered_map<string,int> vocabulario){
-//void Ordena::executa(){
+void Ordena::carrega_buffer_ordenacao(int* pos_prox){
+
+    int num_conta_bits = conta_bits.size();
+    vector<unsigned int> v;
+    int termino_arquivo;
+
+    for(int i=0;i<num_conta_bits;i++){
+       
+          leitura.inicia_conta_bits(conta_bits[i]);
+
+          termino_arquivo = leitura.ler_tripla(v,3);
+          buffer_ordenacao[i].pos = v.back();
+          v.pop_back();
+          buffer_ordenacao[i].doc = v.back();
+          v.pop_back();
+          buffer_ordenacao[i].lex = v.back();
+          v.pop_back();
+
+          if (termino_arquivo > 0)
+                  pos_prox[i] = leitura.pega_conta_bits();
+          else pos_prox[i] = -leitura.pega_conta_bits();
+     }
+}
+
+void Ordena::atualiza_buffer_ordenacao(int pos){
+
+    vector<unsigned int> v;
+
+    leitura.inicia_conta_bits(conta_bits[pos]);
+
+    leitura.ler_tripla(v,3);
+    buffer_ordenacao[pos].pos = v.back();
+    v.pop_back();
+    buffer_ordenacao[pos].doc = v.back();
+    v.pop_back();
+    buffer_ordenacao[pos].lex = v.back();
+    v.pop_back();
+
+}
+
+void Ordena::executa(Colecao& col){
     
 
     //executa a ordenacao do indice em disco e atualiza 
@@ -193,10 +232,10 @@ void Ordena::executa(unordered_map<string,int> vocabulario){
 
     leitura.inicia_nome_arquivo(escrita.pega_nome_arquivo());
 
-    tripla_t min,atual;
-    vector<unsigned int> v;
+    tripla_t min;
     vector<int> limites(conta_bits);
     int min_conta_bits = 0;
+    vector<unsigned int> v;
 
     int num_conta_bits = conta_bits.size();
 
@@ -204,16 +243,22 @@ void Ordena::executa(unordered_map<string,int> vocabulario){
     int ntriplas = 0;
     int atualiza_conta_bits = 0;
     int termino_arquivo = 1;
+    int* flag_lex_visitado = new int[col.pega_tamanho_vocabulario()]();
+
+    cout << "NUMERO DE TRIPLAS: " << conta_triplas << endl;
+
+    buffer_ordenacao = new tripla_t[num_conta_bits]();
+    int* pos_prox = new int[num_conta_bits]();
+
+    carrega_buffer_ordenacao(pos_prox);
 
     while(ntriplas<conta_triplas){
          min.lex = UINT_MAX;
          min.doc = UINT_MAX;
          min.pos = UINT_MAX;
+
 	 v.clear();
 
-	//TODO: eu posso eliminar algumas leituras de disco aqui.
-	//mantendo em um buffer os as primeiras triplas e atualizando apenas a 
-	//que mudar
         for(int i=0;i<num_conta_bits;i++){
 	    //verificar se uma run nao 
 	    //tem mais elemento
@@ -223,37 +268,24 @@ void Ordena::executa(unordered_map<string,int> vocabulario){
 		if (conta_bits[i]<0) continue;
 	    } 	
 	
-	    leitura.inicia_conta_bits(conta_bits[i]);
-
-	    termino_arquivo = leitura.ler_tripla(v,3);
-	    atual.pos = v.back();
-	    v.pop_back();
-	    atual.doc = v.back();
-	    v.pop_back();
-	    atual.lex = v.back();
-	    v.pop_back();
-
-	    if (compara_triplas(atual,min)<0){
-		min.lex = atual.lex;
-		min.doc = atual.doc;
-		min.pos = atual.pos;
+	    if (compara_triplas(buffer_ordenacao[i],min)<0){
+		min.lex = buffer_ordenacao[i].lex;
+		min.doc = buffer_ordenacao[i].doc;
+		min.pos = buffer_ordenacao[i].pos;
 		min_conta_bits = i;
-		if (termino_arquivo > 0)
-		    atualiza_conta_bits = leitura.pega_conta_bits();
-		else atualiza_conta_bits = -leitura.pega_conta_bits();
 	    }
         }
 
 
-	//vou assumir que o termo ja vai estar no mapeamento
-	if (termos_pos[min.lex].size()==0){
-	    //se a posicao do termo ainda nao foi marcada
-	    //entao guardar esta posicao
-	    if (conta_bits[i]>0)
-	        termos_pos[min.lex].push_back(conta_bits[min_conta_bits]);
-	    else termos_pos[min.lex].push_back(-conta_bits[min_conta_bits]);
+	if (flag_lex_visitado[min.lex] == 0){
+	    if (conta_bits[min.lex]>0)
+	       col.atualiza_vocabulario(min.lex,conta_bits[min_conta_bits]);
+	    else col.atualiza_vocabulario(min.lex,-conta_bits[min_conta_bits]);
+	    flag_lex_visitado[min.lex] = 1;
 	}
-	conta_bits[min_conta_bits] = atualiza_conta_bits;
+
+	conta_bits[min_conta_bits] = pos_prox[min_conta_bits];
+	atualiza_buffer_ordenacao(min_conta_bits);
 	//
 	//cout << min.lex << " " << min.doc << " " << min.pos << endl;
 
@@ -261,6 +293,8 @@ void Ordena::executa(unordered_map<string,int> vocabulario){
 	v.push_back(min.pos);
     
         escrita_ordenada.escreve_tripla(v);
+
+	cout << "Tripla no.: " << ntriplas << endl;
 
 	ntriplas++;
     }
@@ -274,6 +308,9 @@ void Ordena::executa(unordered_map<string,int> vocabulario){
 
      remove(narquivo_run);
      rename(narquivo_ordenado,narquivo);
+
+     delete[] flag_lex_visitado;
+     delete[] buffer_ordenacao;
 
 }
 

@@ -22,10 +22,14 @@
 
 #include "le.h"
 #include "escreve.h"
+#include "colecao.h"
 
 #include <unordered_map>
 
 using namespace std;
+
+#ifndef __ORDENA_H_
+#define __ORDENA_H_
 
 typedef struct tripla{
     unsigned int lex;
@@ -44,6 +48,8 @@ class Ordena{
     int conta_triplas;
     streampos tamanho_arquivo;
 
+    tripla_t *buffer_ordenacao;
+
     public:
     Ordena(string narquivo);
     int carrega_run(int& pos_arquivo);
@@ -52,5 +58,9 @@ class Ordena{
     void ordena_todas_runs();
     int compara_triplas(tripla_t a,tripla_t b);
     void merge_run(int i,int m,int f);
-    void executa(unordered_map<string,int> vocabulario);
+    void executa(Colecao& col);
+    void atualiza_buffer_ordenacao(int pos);
+    void carrega_buffer_ordenacao(int* pos_prox);
 };
+
+#endif

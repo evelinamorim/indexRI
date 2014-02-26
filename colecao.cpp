@@ -32,21 +32,26 @@
 using namespace std;
 using namespace RICPNS;
 
-//carregar todas as palavras do vocabulario em memoria, para poder contar
-//a quantidade de palavras e inserir a localizacao? Esta localizacao 
-//eh a posicao no HTML em bytes? como?
-//
-//Posso usar o map para montar meu vocabulario?
+const string Colecao::nome_arquivo_indice="index.bin";
+const string Colecao::nome_arquivo_vocabulario="voc.txt";
 
-Colecao::Colecao(){
+Colecao::Colecao():escrita(nome_arquivo_indice){
     contaPalavras = 1;
+}
+
+const string Colecao::pega_nome_arquivo_indice(){
+    return nome_arquivo_indice;
+}
+
+int Colecao::pega_tamanho_vocabulario(){
+    return vocabulario.size();
 }
 
 void Colecao::ler(string dirEntrada,string nomeIndice){
     CollectionReader* leitor = new CollectionReader(dirEntrada,nomeIndice);
     Document doc;
 
-    unordered_map<int,vector<int>> termos_pos;
+    unordered_map<int,vector<int> > termos_pos;
 
     htmlcxx::HTML::ParserDom parser;
 
@@ -57,10 +62,9 @@ void Colecao::ler(string dirEntrada,string nomeIndice){
 
 	
 	cout << "[" << doc.getURL() << "]" << endl;
-	tree<htmlcxx::HTML::Node> dom = parser.parseTree(doc.getText(),i);
+	tree<htmlcxx::HTML::Node> dom = parser.parseTree(doc.getText());
 
-	termos_pos = ler_arvore_dom(dom);
-	//TODO: indexacao de documento
+	termos_pos = ler_arvore_dom(dom,i);
 	armazena_termos_doc(termos_pos,i);
 	    
 	//cout << dom << endl;
@@ -68,15 +72,20 @@ void Colecao::ler(string dirEntrada,string nomeIndice){
 	++i;
     }
 
+    //finaliza o armazenamento aqui
+    if (escrita.pega_excedente()!=0)
+	escrita.escreve_excedente();
+
+
     delete leitor;
 }
 
-unordered_map<int,vector<int>> Colecao::ler_arvore_dom(tree<htmlcxx::HTML::Node> dom,int idArvore){
+unordered_map<int,vector<int> > Colecao::ler_arvore_dom(tree<htmlcxx::HTML::Node> dom,int idArvore){
     tree<htmlcxx::HTML::Node>::iterator it = dom.begin();
     tree<htmlcxx::HTML::Node>::iterator end = dom.end();
 
     //para guardar relacao (termo,lista_posicoes_doc)
-    unordered_map<int,vector<int>> termos_pos;
+    unordered_map<int,vector<int> > termos_pos;
 
     int i = 0;
     //contador para saber em que posicao esta uma dada palavra
@@ -116,11 +125,13 @@ unordered_map<int,vector<int>> Colecao::ler_arvore_dom(tree<htmlcxx::HTML::Node>
 
 		   if (valor == 0){
 	               vocabulario[*it] = contaPalavras;
+
 		       termos_pos[contaPalavras].push_back(palavraPos);
 		       contaPalavras++;
 		   }else{
-		       int gap = termo_pos[vocabulario[*it].size()-1]-palavraPos;
-		       termos_pos[vocabulario[*it]].push_back(gap);
+		       //esta logica de gap soh funciona para o primeiro da lista
+		       //int gap = termos_pos[vocabulario[*it]].back()-palavraPos;
+		       termos_pos[vocabulario[*it]].push_back(palavraPos);
 		   }
 		   it++;
 	        }
@@ -131,22 +142,27 @@ unordered_map<int,vector<int>> Colecao::ler_arvore_dom(tree<htmlcxx::HTML::Node>
     return termos_pos;
 }
 
-void Colecao::armazena_termos_doc(unordered_map<int,vector<int>> termos_pos,int doc){
+void Colecao::armazena_termos_doc(unordered_map<int,vector<int> > termos_pos,int doc){
     //dado o codigo do item lexical armazena em disco o 
     //lexical
-    //TODO: utilizar objeto escrita para escrever os termos no documento
 
-    unordered_map<int,vector<int>>::iterator it_termo = termos_pos.begin();
-    vector<int> v;
+    unordered_map<int,vector<int> >::iterator it_termo = termos_pos.begin();
+    vector<unsigned int> v;
+    int pos_gap;
 
     while(it_termo != termos_pos.end()){
 
 	vector<int>::iterator it_pos;
 
-	for(it_pos=it_termo->second.begin();it_pos!=it_termo->second.end();it_pos++){
+	for(it_pos=it_termo->second.begin();it_pos!=it_termo->second.end();it_pos++)        {
+	    if (it_pos!=it_termo->second.begin())
+		pos_gap = *(it_pos)-*(it_pos-1);
+	    else pos_gap = *it_pos;
+
+
             v.push_back(it_termo->first);
 	    v.push_back(doc);
-            v.push_back(*it_pos);
+            v.push_back(pos_gap);
 
 	    escrita.escreve_tripla(v);
 
@@ -157,3 +173,24 @@ void Colecao::armazena_termos_doc(unordered_map<int,vector<int>> termos_pos,int 
     }
 }
 
+    ;
+void Colecao::atualiza_vocabulario(int lex,int pos){
+    vocabulario[vocabulario_invertido[lex]] = pos;
+}
+
+void Colecao::escreve_vocabulario(){
+    ofstream arquivo (nome_arquivo_vocabulario, ios::out|ios::app);
+
+    if (arquivo.is_open()){
+
+        unordered_map<string,int>::iterator it_voc = vocabulario.begin();
+
+        while(it_voc != vocabulario.end()){
+	    arquivo << it_voc->first << " " << it_voc->second << endl;
+            ++it_voc;
+	}
+	arquivo.close();
+    }else{
+	cout << "Colecao::atualiza_vocabulario::Problema ao abrir arquivo." << endl;
+    }
+}

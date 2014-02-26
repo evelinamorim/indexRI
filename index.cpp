@@ -18,6 +18,7 @@
  * */
 
 #include "colecao.h"
+#include "ordena.h"
 #include "CollectionReader.h"
 
 #include <cstdlib>
@@ -29,14 +30,21 @@ using namespace RICPNS;
 
 
 int main(int argc,char** argv){
-        string dirEntrada = argv[1];
-	    string nomeIndice = argv[2];
+    string dirEntrada = argv[1];
+    string nomeIndice = argv[2];
 
-	        Colecao *col = new Colecao();
+    Colecao *col = new Colecao();
 
-		    col->ler(dirEntrada,nomeIndice);
+    //le a colecao e controi o indice desordenado
+    col->ler(dirEntrada,nomeIndice);
 
-		        return 0;
+    Ordena *ordenar = new Ordena(col->pega_nome_arquivo_indice());
+
+    ordenar->executa(*col);
+
+    col->escreve_vocabulario();
+
+    return 0;
 }
 
 
