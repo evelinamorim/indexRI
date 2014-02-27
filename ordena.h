@@ -59,7 +59,7 @@ class Ordena{
     int compara_triplas(tripla_t a,tripla_t b);
     void merge_run(int i,int m,int f);
     void executa(Colecao& col);
-    void atualiza_buffer_ordenacao(int pos);
+    void atualiza_buffer_ordenacao(int pos,int* pos_prox);
     void carrega_buffer_ordenacao(int* pos_prox);
 };
 

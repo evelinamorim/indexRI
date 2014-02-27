@@ -119,6 +119,8 @@ unsigned int gamma_para_int(vector<unsigned int>& x,int& nx,int pos){
     cbits = 0;
     int resto = cu;
     int deslocamento = pos-(2*cu-1)+1;
+    int pos_cb = pos+cu;//essa inicializacao eh valida quando cb e cu estao 
+    //no mesmo bit
 
     //zerando a parte unaria
 
@@ -130,10 +132,11 @@ unsigned int gamma_para_int(vector<unsigned int>& x,int& nx,int pos){
 	//pos+1: quantidade de bits na parte 1
 	//cu+1+resto: quantidade de bits na parte 2
 	deslocamento = 32-(cu-1+resto);
+	//resto = cu-1+resto;
 	pos = 31;
+	pos_cb = pos-resto;
     }
 
-    int pos_cb=31;
     for(int i=pos;i>(pos-resto);i--){
 	 if ((x.front() & (1 << i))!=0){
 	     y &= ~(1 << i);

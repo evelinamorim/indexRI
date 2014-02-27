@@ -61,7 +61,10 @@ int Ordena::carrega_run(int& pos_arquivo){
 	run[i].lex = v.back();
 	v.pop_back();
 	conta_triplas++;
-	//cout << run[i].lex << " " << run[i].doc << " " << run[i].pos << endl;
+	//TODO: ta carregando legal. Sera que eh na ordenacao na hora de trocasde r
+	//runs? Conferir tbm em para ver se existem posicoes muito grandes mesmo 
+	//de palavras
+        //cout << ">>" << run[i].lex << " " << run[i].doc << " " << run[i].pos << endl;
 	if (pos_arquivo<0){ 
 	    i = i+1;
 	    break;
@@ -170,9 +173,15 @@ void Ordena::ordena_run(int tam_run){
 void Ordena::ordena_todas_runs(){
 
      int pos_arquivo = 0;
+     cout << "RUN ORDENADA" << endl;
      while (pos_arquivo >= 0){
          int tam_run = carrega_run(pos_arquivo);
 	 ordena_run(tam_run);
+	 //Acho que esta ok aqui. Visto que as triplas estao ordenadas por run
+	 /*for (int i=0;i<tam_run;i++){
+	     cout << ">>> " << run[i].lex << " " << run[i].doc << " " << run[i].pos <<endl; 
+	 }*/
+
 	 escreve_run(tam_run);
 	 //cout << "POS_ARQUIVO: " << pos_arquivo << endl;
      }
@@ -199,26 +208,31 @@ void Ordena::carrega_buffer_ordenacao(int* pos_prox){
           v.pop_back();
           buffer_ordenacao[i].lex = v.back();
           v.pop_back();
-
+	  //a leitura esta correta? tem numeros estranho ou a escrita
+          //cout << ">> " << conta_bits[i] << " "<< buffer_ordenacao[i].lex << " " <<buffer_ordenacao[i].doc << " " << buffer_ordenacao[i].pos << endl;
           if (termino_arquivo > 0)
                   pos_prox[i] = leitura.pega_conta_bits();
           else pos_prox[i] = -leitura.pega_conta_bits();
      }
 }
 
-void Ordena::atualiza_buffer_ordenacao(int pos){
+void Ordena::atualiza_buffer_ordenacao(int pos,int* pos_prox){
 
     vector<unsigned int> v;
 
     leitura.inicia_conta_bits(conta_bits[pos]);
 
-    leitura.ler_tripla(v,3);
+    int pos_arquivo = leitura.ler_tripla(v,3);
     buffer_ordenacao[pos].pos = v.back();
     v.pop_back();
     buffer_ordenacao[pos].doc = v.back();
     v.pop_back();
     buffer_ordenacao[pos].lex = v.back();
     v.pop_back();
+
+    if (pos_arquivo >0 )
+       pos_prox[pos] = leitura.pega_conta_bits();
+    else pos_prox[pos] = pos_arquivo;
 
 }
 
@@ -241,11 +255,11 @@ void Ordena::executa(Colecao& col){
 
 
     int ntriplas = 0;
-    int atualiza_conta_bits = 0;
+    int atualiza_conta_bits = escrita_ordenada.pega_conta_bits();
     int termino_arquivo = 1;
     int* flag_lex_visitado = new int[col.pega_tamanho_vocabulario()]();
 
-    cout << "NUMERO DE TRIPLAS: " << conta_triplas << endl;
+    //cout << "NUMERO DE TRIPLAS: " << conta_triplas << endl;
 
     buffer_ordenacao = new tripla_t[num_conta_bits]();
     int* pos_prox = new int[num_conta_bits]();
@@ -263,7 +277,10 @@ void Ordena::executa(Colecao& col){
 	    //verificar se uma run nao 
 	    //tem mais elemento
 	    if (i!=(num_conta_bits-1)){
-	       if (conta_bits[i]>=limites[i+1]) continue;
+	       if (conta_bits[i]>=limites[i+1]){ 
+		  // cout << "RUN " << i << " pulou de " << num_conta_bits << " RUNS "<< endl;
+		   continue;
+	       }
 	    }else{
 		if (conta_bits[i]<0) continue;
 	    } 	
@@ -277,24 +294,26 @@ void Ordena::executa(Colecao& col){
         }
 
 
-	if (flag_lex_visitado[min.lex] == 0){
-	    if (conta_bits[min.lex]>0)
-	       col.atualiza_vocabulario(min.lex,conta_bits[min_conta_bits]);
-	    else col.atualiza_vocabulario(min.lex,-conta_bits[min_conta_bits]);
-	    flag_lex_visitado[min.lex] = 1;
-	}
 
 	conta_bits[min_conta_bits] = pos_prox[min_conta_bits];
-	atualiza_buffer_ordenacao(min_conta_bits);
+	atualiza_buffer_ordenacao(min_conta_bits,pos_prox);
 	//
 	//cout << min.lex << " " << min.doc << " " << min.pos << endl;
 
 	v.push_back(min.doc);
 	v.push_back(min.pos);
+
+	if (flag_lex_visitado[min.lex] == 0){
+	    //acho que este conta_bits nao presta mais porque vou escrever 
+	    //em um novo arquivo
+	    col.atualiza_vocabulario(min.lex,escrita_ordenada.pega_conta_bits_global());
+	    flag_lex_visitado[min.lex] = 1;
+	}
     
         escrita_ordenada.escreve_tripla(v);
 
-	cout << "Tripla no.: " << ntriplas << endl;
+
+	//cout << "Tripla no.: " << ntriplas << endl;
 
 	ntriplas++;
     }

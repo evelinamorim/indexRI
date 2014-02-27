@@ -53,8 +53,8 @@ class Colecao{
 
     void atualiza_vocabulario(int lex,int pos);
     void escreve_vocabulario();
-
-    //TODO: fazer ler vocabulario
+    vector<int>  carrega_vocabulario(const string arquivo_vocabulario);
+    int pega_lexico_inteiro(string p);
 
 };
 

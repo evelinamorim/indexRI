@@ -31,9 +31,11 @@ class Escreve{
     //guarda o excedente do buffer
     unsigned int *excedente;
     int conta_bits;
+    int conta_bits_global;
     string nome_arquivo;
     public:
     Escreve(string narquivo);
+    int pega_conta_bits_global();
     int pega_conta_bits();
     string pega_nome_arquivo();
     int escreve_tripla(vector<unsigned int> v);

@@ -32,6 +32,7 @@ class Le{
     Le(string narquivo);
     void inicia_nome_arquivo(string narquivo);
     int ler_tripla(vector<unsigned int>& v,int nnum);
+    int ler_tripla_pos(vector<unsigned int>& v,int pos);
     int ler_numero();
     void carrega_buffer(ifstream& arquivo,int nnum);
     int pega_conta_bits();

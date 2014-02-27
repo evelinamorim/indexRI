@@ -24,6 +24,7 @@ using namespace std;
 
 Escreve::Escreve(string narquivo){
     conta_bits = 0;
+    conta_bits_global = 0;
     nome_arquivo = narquivo;
     excedente = new unsigned int[1];
     *excedente = 0;
@@ -35,6 +36,10 @@ void Escreve::inicia_conta_bits(int cb){
 
 int Escreve::pega_conta_bits(){
     return conta_bits;
+}
+
+int Escreve::pega_conta_bits_global(){
+    return conta_bits_global;
 }
 
 void Escreve::inicia_excedente(unsigned int e){
@@ -76,7 +81,6 @@ int Escreve::escreve_tripla(vector<unsigned int> v){
         carrega_buffer(tamv);
 
 	vector<unsigned int>::iterator it;
-
 
 
 	for(it=v.begin();it!=v.end();it++){
@@ -149,6 +153,7 @@ void Escreve::escreve_buffer(ofstream& arquivo){
     //quantidade de bytes que esta no buffer que devo escrever
     int nbytes = ceil(conta_bits/8);
     int nint = floor(conta_bits/32.0);
+    conta_bits_global += conta_bits;
 
 	//for (int i=0;i<nint;i++) 
 	  //  cout << "buffer[" << i << "]: " << buffer[i] << endl;

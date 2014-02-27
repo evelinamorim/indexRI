@@ -38,8 +38,40 @@ void Le::inicia_conta_bits(int cb){
     conta_bits = cb;
 }
 
-//TODO: mudar para argumento com vector. Assim fica generico. Como argumento
-//colocar um vector que vai ser preenchido e quantos valores!
+int Le::ler_tripla_pos(vector<unsigned int>& v,int pos){
+    //esta funcao le tripla ateh a posicao de bit dada
+    ifstream arquivo(nome_arquivo,ios::in|ios::binary);
+    int pos_arquivo;
+
+    if (arquivo.is_open()){
+
+        pos_arquivo = floor(conta_bits/32);
+	arquivo.seekg(sizeof(int)*pos_arquivo,ios::beg);
+	carrega_buffer(arquivo,nnum);
+
+        while(conta_bits < pos){
+	    v.push_back(ler_numero());
+	    if (arquivo.eof() && buffer[0]==0)
+	       pos_arquivo = -1;
+
+	    pos_arquivo = arquivo.tellg();
+
+	    if (pos_arquivo<0 && buffer[0]!=0)
+	       pos_arquivo = 1;
+
+	    if (pos_arquivo<0) break;
+	}
+
+
+
+	arquivo.close();
+    }else{
+	cout << "Ler::ler_tripla::Unable to open file." << endl;
+    }
+
+    return pos_arquivo;
+}
+
 int Le::ler_tripla(vector<unsigned int>& v,int nnum){
 
     //esta funcao le apenas uma tripla, dada a posicao atual do arquivo
@@ -56,6 +88,7 @@ int Le::ler_tripla(vector<unsigned int>& v,int nnum){
         for(int i=0;i<nnum;i++){
 	    v.push_back(ler_numero());
 	}
+
 
 	if (arquivo.eof() && buffer[0]==0)
 	    pos_arquivo = -1;
@@ -111,12 +144,13 @@ int Le::ler_numero(){
     return numero;
 }
 
-/* int main(){
-    Le l = Le("teste_comp4.bintmp");
+/*int main(){
+    Le l = Le("index.bin");
     unsigned int lex,doc,pos;
     vector<unsigned int> v;
 
     //1
+    for(int i = 0;i< 13650;i++){
     l.ler_tripla(v,3);
 
     pos = v.back();
@@ -125,183 +159,10 @@ int Le::ler_numero(){
     v.pop_back();
     lex = v.back();
     v.pop_back();
-    cout << lex << " " << doc << " " << pos << endl;
+    cout << lex<< " " << doc << " " << pos << endl;}
 
-    //2
-    l.ler_tripla(v,3);
 
-    pos = v.back();
-    v.pop_back();
-    doc = v.back();
-    v.pop_back();
-    lex = v.back();
-    v.pop_back();
-    cout << lex << " " << doc << " " << pos << endl;
 
-    //3
-    l.ler_tripla(v,3);
-
-    pos = v.back();
-    v.pop_back();
-    doc = v.back();
-    v.pop_back();
-    lex = v.back();
-    v.pop_back();
-    cout << lex << " " << doc << " " << pos << endl;
-
-    //4
-    l.ler_tripla(v,3);
-
-    pos = v.back();
-    v.pop_back();
-    doc = v.back();
-    v.pop_back();
-    lex = v.back();
-    v.pop_back();
-    cout << lex << " " << doc << " " << pos << endl;
-
-    //5
-    l.ler_tripla(v,3);
-
-    pos = v.back();
-    v.pop_back();
-    doc = v.back();
-    v.pop_back();
-    lex = v.back();
-    v.pop_back();
-    cout << lex << " " << doc << " " << pos << endl;
-
-    //6
-    l.ler_tripla(v,3);
-
-    pos = v.back();
-    v.pop_back();
-    doc = v.back();
-    v.pop_back();
-    lex = v.back();
-    v.pop_back();
-    cout << lex << " " << doc << " " << pos << endl;
-
-    //7
-    l.ler_tripla(v,3);
-
-    pos = v.back();
-    v.pop_back();
-    doc = v.back();
-    v.pop_back();
-    lex = v.back();
-    v.pop_back();
-    cout << lex << " " << doc << " " << pos << endl;
-
-    //8
-    l.ler_tripla(v,3);
-
-    pos = v.back();
-    v.pop_back();
-    doc = v.back();
-    v.pop_back();
-    lex = v.back();
-    v.pop_back();
-    cout << lex << " " << doc << " " << pos << endl;
-
-    //9
-    l.ler_tripla(v,3);
-
-    pos = v.back();
-    v.pop_back();
-    doc = v.back();
-    v.pop_back();
-    lex = v.back();
-    v.pop_back();
-    cout << lex << " " << doc << " " << pos << endl;
-
-    //10
-    l.ler_tripla(v,3);
-
-    pos = v.back();
-    v.pop_back();
-    doc = v.back();
-    v.pop_back();
-    lex = v.back();
-    v.pop_back();
-    cout << lex << " " << doc << " " << pos << endl;
-
-    //11
-    l.ler_tripla(v,3);
-
-    pos = v.back();
-    v.pop_back();
-    doc = v.back();
-    v.pop_back();
-    lex = v.back();
-    v.pop_back();
-    cout << lex << " " << doc << " " << pos << endl;
-
-    //12
-    l.ler_tripla(v,3);
-
-    pos = v.back();
-    v.pop_back();
-    doc = v.back();
-    v.pop_back();
-    lex = v.back();
-    v.pop_back();
-    cout << lex << " " << doc << " " << pos << endl;
-
-    //13
-    l.ler_tripla(v,3);
-
-    pos = v.back();
-    v.pop_back();
-    doc = v.back();
-    v.pop_back();
-    lex = v.back();
-    v.pop_back();
-    cout << lex << " " << doc << " " << pos << endl;
-
-    //14
-    l.ler_tripla(v,3);
-
-    pos = v.back();
-    v.pop_back();
-    doc = v.back();
-    v.pop_back();
-    lex = v.back();
-    v.pop_back();
-    cout << lex << " " << doc << " " << pos << endl;
-
-    //15
-    l.ler_tripla(v,3);
-
-    pos = v.back();
-    v.pop_back();
-    doc = v.back();
-    v.pop_back();
-    lex = v.back();
-    v.pop_back();
-    cout << lex << " " << doc << " " << pos << endl;
-
-    //16
-    l.ler_tripla(v,3);
-
-    pos = v.back();
-    v.pop_back();
-    doc = v.back();
-    v.pop_back();
-    lex = v.back();
-    v.pop_back();
-    cout << lex << " " << doc << " " << pos << endl;
-
-    //17
-    l.ler_tripla(v,3);
-
-    pos = v.back();
-    v.pop_back();
-    doc = v.back();
-    v.pop_back();
-    lex = v.back();
-    v.pop_back();
-    cout << lex << " " << doc << " " << pos << endl;
     return 0;
-}*/ 
+}*/
 

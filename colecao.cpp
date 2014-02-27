@@ -57,7 +57,7 @@ void Colecao::ler(string dirEntrada,string nomeIndice){
 
     doc.clear();
 
-    int i = 0;
+    int i = 1;
     while(leitor->getNextDocument(doc)){
 
 	
@@ -125,6 +125,7 @@ unordered_map<int,vector<int> > Colecao::ler_arvore_dom(tree<htmlcxx::HTML::Node
 
 		   if (valor == 0){
 	               vocabulario[*it] = contaPalavras;
+		       vocabulario_invertido[contaPalavras] = *it;
 
 		       termos_pos[contaPalavras].push_back(palavraPos);
 		       contaPalavras++;
@@ -164,6 +165,8 @@ void Colecao::armazena_termos_doc(unordered_map<int,vector<int> > termos_pos,int
 	    v.push_back(doc);
             v.push_back(pos_gap);
 
+	    ///cout << "-->" << it_termo->first << " " << doc << " " << pos_gap << endl;
+
 	    escrita.escreve_tripla(v);
 
             v.clear();
@@ -175,22 +178,59 @@ void Colecao::armazena_termos_doc(unordered_map<int,vector<int> > termos_pos,int
 
     ;
 void Colecao::atualiza_vocabulario(int lex,int pos){
+    //cout <<">>>> " << vocabulario_invertido[lex] << " " << vocabulario[vocabulario_invertido[lex]] << " " << lex << " " << pos << endl;
     vocabulario[vocabulario_invertido[lex]] = pos;
 }
 
 void Colecao::escreve_vocabulario(){
     ofstream arquivo (nome_arquivo_vocabulario, ios::out|ios::app);
-
     if (arquivo.is_open()){
 
         unordered_map<string,int>::iterator it_voc = vocabulario.begin();
-
-        while(it_voc != vocabulario.end()){
-	    arquivo << it_voc->first << " " << it_voc->second << endl;
-            ++it_voc;
+        int i=1;
+	int ntermos = vocabulario_invertido.size();
+        while(i<ntermos){
+	    arquivo << vocabulario_invertido[i] << " " <<  vocabulario[vocabulario_invertido[i]] << endl;
+	    i++;
 	}
 	arquivo.close();
     }else{
 	cout << "Colecao::atualiza_vocabulario::Problema ao abrir arquivo." << endl;
     }
 }
+
+vector<int> Colecao::carrega_vocabulario(const string arquivo_vocabulario){
+    ifstream arquivo(arquivo_vocabulario,ios::in);
+    string linha;
+    int i = 0;
+    vector<int> posicoes;
+
+    if (arquivo.is_open()){
+	while(getline(arquivo,linha)){
+	    stringstream linhastream(linha);
+	    string dado;
+	    string lex;
+	    int pos;
+
+	    linhastream >> lex >> pos;
+
+	    vocabulario[lex] = i;
+	    i++;
+	    posicoes.push_back(pos);
+
+	    //pos pode ser um hash, pois nao faz sentido ter uma palavra com posicao
+	    //igual
+	    vocabulario_invertido[pos] = lex;
+	}
+    }else{
+	cout << "Colecao::carrega_vocabulario: Nao foi possivel abrir vocabulario." << endl;
+    }
+
+   return posicoes; 
+
+}
+
+int Colecao::pega_lexico_inteiro(string p){
+    return vocabulario[p];
+}
+
