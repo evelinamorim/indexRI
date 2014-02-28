@@ -107,6 +107,7 @@ void Escreve::escreve_numero(unsigned int x){
     unsigned int ny = 0;
     unsigned int y;
     para_codigo_gamma(x,y,ny);
+    conta_bits_global += ny;
 
 
     //posicao no buffer que o numero deve ficar
@@ -153,7 +154,6 @@ void Escreve::escreve_buffer(ofstream& arquivo){
     //quantidade de bytes que esta no buffer que devo escrever
     int nbytes = ceil(conta_bits/8);
     int nint = floor(conta_bits/32.0);
-    conta_bits_global += conta_bits;
 
 	//for (int i=0;i<nint;i++) 
 	  //  cout << "buffer[" << i << "]: " << buffer[i] << endl;

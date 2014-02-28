@@ -119,6 +119,7 @@ unordered_map<int,vector<int> > Colecao::ler_arvore_dom(tree<htmlcxx::HTML::Node
 	        while(it!=listaPalavras.end()){
 		   converteParaMinusculo(*it);
 
+
 		   palavraPos++;
 
 		   int& valor = vocabulario[*it];
@@ -165,7 +166,7 @@ void Colecao::armazena_termos_doc(unordered_map<int,vector<int> > termos_pos,int
 	    v.push_back(doc);
             v.push_back(pos_gap);
 
-	    ///cout << "-->" << it_termo->first << " " << doc << " " << pos_gap << endl;
+	    //cout << "-->" << it_termo->first << " " << doc << " " << pos_gap << endl;
 
 	    escrita.escreve_tripla(v);
 
@@ -176,9 +177,10 @@ void Colecao::armazena_termos_doc(unordered_map<int,vector<int> > termos_pos,int
     }
 }
 
-    ;
+    
 void Colecao::atualiza_vocabulario(int lex,int pos){
-    //cout <<">>>> " << vocabulario_invertido[lex] << " " << vocabulario[vocabulario_invertido[lex]] << " " << lex << " " << pos << endl;
+    //if (vocabulario_invertido[lex] == "tecnologia")
+    //    cout <<">>>> " << vocabulario_invertido[lex] << " " << vocabulario[vocabulario_invertido[lex]] << " " << lex << " " << pos << endl;
     vocabulario[vocabulario_invertido[lex]] = pos;
 }
 
@@ -202,7 +204,7 @@ void Colecao::escreve_vocabulario(){
 vector<int> Colecao::carrega_vocabulario(const string arquivo_vocabulario){
     ifstream arquivo(arquivo_vocabulario,ios::in);
     string linha;
-    int i = 0;
+    int i = 1;
     vector<int> posicoes;
 
     if (arquivo.is_open()){
@@ -220,7 +222,7 @@ vector<int> Colecao::carrega_vocabulario(const string arquivo_vocabulario){
 
 	    //pos pode ser um hash, pois nao faz sentido ter uma palavra com posicao
 	    //igual
-	    vocabulario_invertido[pos] = lex;
+	    vocabulario_invertido[i] = lex;
 	}
     }else{
 	cout << "Colecao::carrega_vocabulario: Nao foi possivel abrir vocabulario." << endl;

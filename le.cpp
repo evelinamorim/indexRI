@@ -46,9 +46,11 @@ int Le::ler_tripla_pos(vector<unsigned int>& v,int pos){
     if (arquivo.is_open()){
 
         pos_arquivo = floor(conta_bits/32);
+	int nnum = (pos-conta_bits)>32?(pos-conta_bits):32;
 	arquivo.seekg(sizeof(int)*pos_arquivo,ios::beg);
 	carrega_buffer(arquivo,nnum);
 
+	//TODO: acho que pode ler um pouco mais do que deveria aqui
         while(conta_bits < pos){
 	    v.push_back(ler_numero());
 	    if (arquivo.eof() && buffer[0]==0)
@@ -61,6 +63,7 @@ int Le::ler_tripla_pos(vector<unsigned int>& v,int pos){
 
 	    if (pos_arquivo<0) break;
 	}
+
 
 
 

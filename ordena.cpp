@@ -298,7 +298,6 @@ void Ordena::executa(Colecao& col){
 	conta_bits[min_conta_bits] = pos_prox[min_conta_bits];
 	atualiza_buffer_ordenacao(min_conta_bits,pos_prox);
 	//
-	//cout << min.lex << " " << min.doc << " " << min.pos << endl;
 
 	v.push_back(min.doc);
 	v.push_back(min.pos);
@@ -311,12 +310,16 @@ void Ordena::executa(Colecao& col){
 	}
     
         escrita_ordenada.escreve_tripla(v);
+	// cout << "--> " <<  min.lex << " " << min.doc << " " << min.pos;
+	//cout << " " << escrita_ordenada.pega_conta_bits_global() << endl;
 
 
 	//cout << "Tripla no.: " << ntriplas << endl;
 
 	ntriplas++;
     }
+    if (escrita_ordenada.pega_excedente()!=0)
+      escrita_ordenada.escreve_excedente();
 
      //as runs ordenadas estao em um arquivo ordenado
      //entao vou pegar o conteudo do arquivo temporario e 

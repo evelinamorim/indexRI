@@ -8,6 +8,15 @@ le:
 	g++ -c -o util.o util.cpp -I $(ricode) -g
 	g++ -c -o le.o le.cpp -I $(ricode) -g
 	g++ -o le le.o util.o -g
+
+pesquisa:
+	g++ -c -o pesquisa.o pesquisa.cpp -I $(ricode) -g
+	g++ -c -o colecao.o colecao.cpp -I $(ricode) -g
+	g++ -c -o util.o util.cpp -I $(ricode) -g
+	g++ -c -o le.o le.cpp -I $(ricode) -g
+	g++ -c -o escreve.o escreve.cpp -I $(ricode) -g
+	g++ -c -o ordena.o ordena.cpp -I $(ricode) -g
+	g++ -o pesquisa pesquisa.o colecao.o util.o le.o escreve.o ordena.o $(ricode)/CollectionReader.o $(ricode)/Document.o -lz -lhtmlcxx -g 
 #compila ricode
 index : $(ricode)
 	g++ -c -o index.o index.cpp -I $(ricode) -g
@@ -21,7 +30,7 @@ index : $(ricode)
 
 clean :
 	rm *.o
-	rm $(ricode)/*.o
+	rm pesquisa
 	rm index
 	rm index.bin*
 
