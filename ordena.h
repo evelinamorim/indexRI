@@ -38,9 +38,9 @@ typedef struct tripla{
 }tripla_t;
 
 class Ordena{
-    Le leitura;
-    Escreve escrita;
-    Escreve escrita_ordenada;
+    Le* leitura;
+    Escreve* escrita;
+    Escreve* escrita_ordenada;
     tripla_t* run;
     string nome_arquivo;
     //este vetor eh para marcar a posicao de inicio de cada run
@@ -51,7 +51,8 @@ class Ordena{
     tripla_t *buffer_ordenacao;
 
     public:
-    Ordena(string narquivo);
+    Ordena(string narquivo,bool compacta);
+
     int carrega_run(int& pos_arquivo);
     void ordena_run(int tam_run);
     int escreve_run(int tam_run);

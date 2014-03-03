@@ -35,7 +35,12 @@ using namespace RICPNS;
 const string Colecao::nome_arquivo_indice="index.bin";
 const string Colecao::nome_arquivo_vocabulario="voc.txt";
 
-Colecao::Colecao():escrita(nome_arquivo_indice){
+Colecao::Colecao(bool compacta){
+
+    if (compacta) escrita = new EscreveCompacta(nome_arquivo_indice);
+    else escrita = new EscreveNormal(nome_arquivo_indice);
+
+
     contaPalavras = 1;
 }
 
@@ -73,9 +78,10 @@ void Colecao::ler(string dirEntrada,string nomeIndice){
     }
 
     //finaliza o armazenamento aqui
-    if (escrita.pega_excedente()!=0)
-	escrita.escreve_excedente();
-
+    if(dynamic_cast<EscreveCompacta*>(escrita) != 0){
+        if (escrita->pega_excedente()!=0)
+	    escrita->escreve_excedente();
+    }
 
     delete leitor;
 }
@@ -166,9 +172,8 @@ void Colecao::armazena_termos_doc(unordered_map<int,vector<int> > termos_pos,int
 	    v.push_back(doc);
             v.push_back(pos_gap);
 
-	    //cout << "-->" << it_termo->first << " " << doc << " " << pos_gap << endl;
 
-	    escrita.escreve_tripla(v);
+	    escrita->escreve_tripla(v);
 
             v.clear();
 	}
@@ -179,8 +184,6 @@ void Colecao::armazena_termos_doc(unordered_map<int,vector<int> > termos_pos,int
 
     
 void Colecao::atualiza_vocabulario(int lex,int pos){
-    //if (vocabulario_invertido[lex] == "tecnologia")
-    //    cout <<">>>> " << vocabulario_invertido[lex] << " " << vocabulario[vocabulario_invertido[lex]] << " " << lex << " " << pos << endl;
     vocabulario[vocabulario_invertido[lex]] = pos;
 }
 
@@ -191,7 +194,7 @@ void Colecao::escreve_vocabulario(){
         unordered_map<string,int>::iterator it_voc = vocabulario.begin();
         int i=1;
 	int ntermos = vocabulario_invertido.size();
-        while(i<ntermos){
+        while(i<=ntermos){
 	    arquivo << vocabulario_invertido[i] << " " <<  vocabulario[vocabulario_invertido[i]] << endl;
 	    i++;
 	}
@@ -234,5 +237,9 @@ vector<int> Colecao::carrega_vocabulario(const string arquivo_vocabulario){
 
 int Colecao::pega_lexico_inteiro(string p){
     return vocabulario[p];
+}
+
+string Colecao::pega_lexico(int p){
+    return vocabulario_invertido[p];
 }
 

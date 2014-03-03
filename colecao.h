@@ -40,10 +40,10 @@ class Colecao{
     int contaPalavras;
     static const string nome_arquivo_vocabulario;
     static const string nome_arquivo_indice;
-    Escreve escrita;
+    Escreve *escrita;
 
     public:
-    Colecao();
+    Colecao(bool compacta);
     void ler(string dirEntrada,string nomeIndice);
     unordered_map<int,vector<int> > ler_arvore_dom(tree<htmlcxx::HTML::Node> arvoreDom,int doc);
     vector<string> lerLexicais(string sentenca);
@@ -55,6 +55,7 @@ class Colecao{
     void escreve_vocabulario();
     vector<int>  carrega_vocabulario(const string arquivo_vocabulario);
     int pega_lexico_inteiro(string p);
+    string pega_lexico(int p);
 
 };
 

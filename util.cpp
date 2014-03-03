@@ -70,7 +70,7 @@ void para_codigo_gamma(unsigned int x,unsigned int& y,unsigned int& ny){
     y |= pbinaria;
 }
 
-int para_codigo_unario(int x){
+int para_codigo_unario(unsigned int x){
     //dado um numero inteiro escreve um codigo unario
     int y = 0;
     for(int i=1;i<x;i++){
@@ -102,7 +102,7 @@ unsigned int unario_para_int(vector<unsigned int>& x,int pos){
     return cbits+1;
 }
 
-unsigned int gamma_para_int(vector<unsigned int>& x,int& nx,int pos){
+unsigned int gamma_para_int(vector<unsigned int>& x,unsigned int& nx,int pos){
 
     //transformar de gamma para int a partir do bit pos
 

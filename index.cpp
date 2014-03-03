@@ -23,6 +23,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <cstring>
 
 
 using namespace std;
@@ -33,12 +34,19 @@ int main(int argc,char** argv){
     string dirEntrada = argv[1];
     string nomeIndice = argv[2];
 
-    Colecao *col = new Colecao();
+    bool compacta = false;
+
+    if (argc == 4){
+	if (strncmp(argv[3],"-c",2)==0) compacta = true;
+    }
+
+
+    Colecao *col = new Colecao(compacta);
 
     //le a colecao e controi o indice desordenado
     col->ler(dirEntrada,nomeIndice);
 
-    Ordena *ordenar = new Ordena(col->pega_nome_arquivo_indice());
+    Ordena *ordenar = new Ordena(col->pega_nome_arquivo_indice(),compacta);
 
     ordenar->executa(*col);
 

@@ -21,9 +21,19 @@
 
 using namespace std;
 
+/*Metodos da classe principal Le*/
+
 Le::Le(string narquivo){
     conta_bits = 0;
     nome_arquivo = narquivo; 
+
+    ifstream arquivo(nome_arquivo,ios::in|ios::binary|ios::ate);
+    if (arquivo.is_open()){
+	tamanho_arquivo = arquivo.tellg();
+	arquivo.close();
+    }else{
+	cout << "Ordena::carrega_run::Nao foi possivel abrir o arquivo.";
+    }
 }
 
 void Le::inicia_nome_arquivo(string narquivo){
@@ -34,7 +44,7 @@ int Le::pega_conta_bits(){
     return conta_bits;
 }
 
-void Le::inicia_conta_bits(int cb){
+void Le::inicia_conta_bits(unsigned int cb){
     conta_bits = cb;
 }
 
@@ -47,24 +57,26 @@ int Le::ler_tripla_pos(vector<unsigned int>& v,int pos){
 
         pos_arquivo = floor(conta_bits/32);
 	int nnum = (pos-conta_bits)>32?(pos-conta_bits):32;
+
 	arquivo.seekg(sizeof(int)*pos_arquivo,ios::beg);
 	carrega_buffer(arquivo,nnum);
 
-	//TODO: acho que pode ler um pouco mais do que deveria aqui
         while(conta_bits < pos){
 	    v.push_back(ler_numero());
+
 	    if (arquivo.eof() && buffer[0]==0)
 	       pos_arquivo = -1;
 
 	    pos_arquivo = arquivo.tellg();
-
+	    if (buffer.size() == 0){
+		break;
+	    }
 	    if (pos_arquivo<0 && buffer[0]!=0)
 	       pos_arquivo = 1;
 
+
 	    if (pos_arquivo<0) break;
 	}
-
-
 
 
 	arquivo.close();
@@ -92,14 +104,19 @@ int Le::ler_tripla(vector<unsigned int>& v,int nnum){
 	    v.push_back(ler_numero());
 	}
 
-
-	if (arquivo.eof() && buffer[0]==0)
-	    pos_arquivo = -1;
-
 	pos_arquivo = arquivo.tellg();
 
-	if (pos_arquivo<0 && buffer[0]!=0)
-	    pos_arquivo = 1;
+	if (buffer.size() != 0){
+	    if (pos_arquivo == tamanho_arquivo && buffer[0]==0)
+	       pos_arquivo = -1;
+	    else{
+	       if (pos_arquivo < 0 && buffer[0]!=0)  pos_arquivo = 1;
+	   }
+	}else{
+	    if (pos_arquivo == tamanho_arquivo) 
+		pos_arquivo = -1;
+	    else pos_arquivo = arquivo.tellg();
+	}
 
 	arquivo.close();
     }else{
@@ -110,14 +127,48 @@ int Le::ler_tripla(vector<unsigned int>& v,int nnum){
 
 }
 
-void Le::carrega_buffer(ifstream& arquivo,int nnum){
+/*Aqui estao os metodos da classe que faz leitura de inteiros em arquivo NAO compactado*/
+LeNormal::LeNormal(string narquivo):Le(narquivo){}
+
+void LeNormal::carrega_buffer(ifstream& arquivo,int nnum){
     //carrega buffer com os numeros a serem decodificados
 
     buffer.clear();
 
-    unsigned int *buf = new unsigned int[nnum];
+    unsigned int *buf = new unsigned int[nnum]();
 
     for(int i=0;i<nnum;i++)
+       arquivo.read((char*) &buf[i],sizeof(int));
+
+
+    for(int i=0;i<nnum;i++)
+       buffer.push_back(buf[i]);
+
+    delete[] buf;
+}
+
+int LeNormal::ler_numero(){
+
+    int numero = buffer.front();
+    buffer.erase(buffer.begin());
+
+    conta_bits += 32;
+
+    return numero;
+}
+
+/* Aqui estao os metodos da classe que faz leitura de inteiros em arquivo compactado */
+
+LeCompacta::LeCompacta(string narquivo):Le(narquivo){}
+
+void LeCompacta::carrega_buffer(ifstream& arquivo,int nnum){
+    //carrega buffer com os numeros a serem decodificados
+
+    buffer.clear();
+
+    unsigned int *buf = new unsigned int[2*nnum]();
+
+    for(int i=0;i<2*nnum;i++)
        arquivo.read((char*) &buf[i],sizeof(int));
 
     //bits ja lidos devem ser zerados. Devem existir pos_bit's para zerar
@@ -128,17 +179,17 @@ void Le::carrega_buffer(ifstream& arquivo,int nnum){
     }
 
 
-    for(int i=0;i<nnum;i++)
+    for(int i=0;i<2*nnum;i++)
        buffer.push_back(buf[i]);
 
     delete[] buf;
 }
 
-int Le::ler_numero(){
+int LeCompacta::ler_numero(){
 
     //int pos_buffer = ceil(conta_bits/32);
     int pos_bit = conta_bits % 32;
-    int nx;
+    unsigned int nx;
 
     int numero = gamma_para_int(buffer,nx,31-pos_bit);
 

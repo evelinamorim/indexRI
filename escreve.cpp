@@ -22,38 +22,30 @@
 
 using namespace std;
 
+/* Metodos da classe Escreve */
+
+//construtor
 Escreve::Escreve(string narquivo){
     conta_bits = 0;
     conta_bits_global = 0;
     nome_arquivo = narquivo;
-    excedente = new unsigned int[1];
-    *excedente = 0;
 }
 
-void Escreve::inicia_conta_bits(int cb){
+void Escreve::inicia_conta_bits(unsigned int cb){
     conta_bits = cb;
 }
 
-int Escreve::pega_conta_bits(){
+unsigned int Escreve::pega_conta_bits(){
     return conta_bits;
 }
 
-int Escreve::pega_conta_bits_global(){
+unsigned int Escreve::pega_conta_bits_global(){
     return conta_bits_global;
-}
-
-void Escreve::inicia_excedente(unsigned int e){
-    *excedente = e;
-}
-
-unsigned int Escreve::pega_excedente(){
-    return *excedente;
 }
 
 string Escreve::pega_nome_arquivo(){
     return nome_arquivo;
 }
-
 
 int Escreve::escreve_tripla(vector<unsigned int> v){
 
@@ -63,19 +55,6 @@ int Escreve::escreve_tripla(vector<unsigned int> v){
 
     if (arquivo.is_open()){
 
-	/* TODO:Acho que nao vai fazer diferenca, considerando 
-	 que esta no modo append e sempre escrevera no fim do 
-	 arquivo*/ 
-	/*if (conta_bits!=0){
-	    int pos_atual = floor(conta_bits/8);
-	    arquivo.seekp(pos_atual,ios::beg);
-	}else{
-	    arquivo.seekp(0,ios::beg);
-	}*/ 
-
-
-
-	//somando mais dois para alocar espaco no  buffer para lex e para doc
 	int tamv = v.size();
 
         carrega_buffer(tamv);
@@ -87,13 +66,9 @@ int Escreve::escreve_tripla(vector<unsigned int> v){
 	    escreve_numero(*it);
 	}
 
-	// cout << "Numero de bits: " << conta_bits << endl;
-
 	escreve_buffer(arquivo);
 
 	pos_arquivo = arquivo.tellp();
-	// cout << "Posicao arquivo: " << pos_arquivo << endl;
-
 
         arquivo.close();
     }else{
@@ -102,7 +77,49 @@ int Escreve::escreve_tripla(vector<unsigned int> v){
     return pos_arquivo;
 }
 
-void Escreve::escreve_numero(unsigned int x){
+/* Metodos da classe EscreveNormal*/
+
+EscreveNormal::EscreveNormal(string narquivo): Escreve(narquivo){}
+
+void EscreveNormal::escreve_numero(unsigned int x){
+    conta_bits_global += 32;
+
+    //posicao no buffer que o numero deve ficar
+    int i = floor(conta_bits /32);
+
+    buffer[i] = x;
+    conta_bits += 32;
+}
+
+void EscreveNormal::carrega_buffer(int tamv){
+    buffer = new unsigned int[tamv]();
+}
+
+void EscreveNormal::escreve_buffer(ofstream& arquivo){
+    //quantidade de bytes que esta no buffer
+    int nint = ceil(conta_bits/32.0);
+
+    arquivo.write((char*) buffer,nint*sizeof(int));
+    conta_bits = 0;
+    delete[] buffer;
+}
+
+/* Metodos da classe EscreveCompacta */
+
+EscreveCompacta::EscreveCompacta(string narquivo): Escreve(narquivo){
+    excedente = new unsigned int[1];
+    *excedente = 0;
+}
+
+void EscreveCompacta::inicia_excedente(unsigned int e){
+    *excedente = e;
+}
+
+unsigned int EscreveCompacta::pega_excedente(){
+    return *excedente;
+}
+
+void EscreveCompacta::escreve_numero(unsigned int x){
     //guarda numero em um buffer
     unsigned int ny = 0;
     unsigned int y;
@@ -136,7 +153,7 @@ void Escreve::escreve_numero(unsigned int x){
     }
 }
 
-void Escreve::carrega_buffer(int tamv){
+void EscreveCompacta::carrega_buffer(int tamv){
     buffer = new unsigned int[tamv]();
     for(int i=0;i<tamv;i++){
        buffer[i]=0;
@@ -150,13 +167,12 @@ void Escreve::carrega_buffer(int tamv){
     }	
 }
 
-void Escreve::escreve_buffer(ofstream& arquivo){
+void EscreveCompacta::escreve_buffer(ofstream& arquivo){
     //quantidade de bytes que esta no buffer que devo escrever
     int nbytes = ceil(conta_bits/8);
     int nint = floor(conta_bits/32.0);
 
-	//for (int i=0;i<nint;i++) 
-	  //  cout << "buffer[" << i << "]: " << buffer[i] << endl;
+    //se houver excedente, deixa como excedente que a proxima escrita resolve
     if (conta_bits % 32 !=0 ){
 	*excedente = buffer[nint];
 	conta_bits = conta_bits % 32;
@@ -168,7 +184,7 @@ void Escreve::escreve_buffer(ofstream& arquivo){
     delete[] buffer;
 }
 
-void Escreve::escreve_excedente(){
+void EscreveCompacta::escreve_excedente(){
     ofstream arquivo (nome_arquivo, ios::out|ios::binary|ios::app);
     if (arquivo.is_open()){
 	arquivo.seekp (arquivo.end);

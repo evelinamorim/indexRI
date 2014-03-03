@@ -36,12 +36,12 @@ bool ehPontuacao(char c);
 
 bool arquivoExiste(const string nomeArquivo);
 
-int para_codigo_unario(int x);
+int para_codigo_unario(unsigned int x);
 
 void para_codigo_gamma(unsigned int x,unsigned int& y,unsigned int &ny);
 
 unsigned int unario_para_int(vector<unsigned int>& x);
 
-unsigned int gamma_para_int(vector<unsigned int>& x,int& nx,int pos);
+unsigned int gamma_para_int(vector<unsigned int>& x,unsigned int& nx,int pos);
 
 #endif

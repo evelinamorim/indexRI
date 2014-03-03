@@ -29,12 +29,22 @@
 
 using namespace std;
 
-Ordena::Ordena(string narquivo):leitura(narquivo),escrita(narquivo + "tmp"),escrita_ordenada(narquivo+".ord"){
+Ordena::Ordena(string narquivo,bool compacta){
     nome_arquivo = narquivo;
     run = new tripla_t[TAMANHO_RUN];
 
-    ifstream arquivo(nome_arquivo,ios::in|ios::binary|ios::ate);
 
+    if (compacta){
+	escrita = new EscreveCompacta(narquivo+"tmp");
+	escrita_ordenada = new EscreveCompacta(narquivo+".ord");
+	leitura = new LeCompacta(narquivo);
+    }else{
+	escrita = new EscreveNormal(narquivo+"tmp");
+	escrita_ordenada = new EscreveNormal(narquivo+".ord");
+	leitura = new LeNormal(narquivo);
+    }
+
+    ifstream arquivo(nome_arquivo,ios::in|ios::binary|ios::ate);
     if (arquivo.is_open()){
 	tamanho_arquivo = arquivo.tellg();
 	arquivo.close();
@@ -47,13 +57,13 @@ Ordena::Ordena(string narquivo):leitura(narquivo),escrita(narquivo + "tmp"),escr
 
 int Ordena::carrega_run(int& pos_arquivo){
 
-    conta_bits.push_back(leitura.pega_conta_bits());
+    conta_bits.push_back(leitura->pega_conta_bits());
     vector<unsigned int> v;
 
     int i;
    // cout << "RUN" << endl;
     for(i=0;i<TAMANHO_RUN;i++){
-	pos_arquivo = leitura.ler_tripla(v,3);
+	pos_arquivo = leitura->ler_tripla(v,3);
 	run[i].pos = v.back();
 	v.pop_back();
 	run[i].doc = v.back();
@@ -61,10 +71,6 @@ int Ordena::carrega_run(int& pos_arquivo){
 	run[i].lex = v.back();
 	v.pop_back();
 	conta_triplas++;
-	//TODO: ta carregando legal. Sera que eh na ordenacao na hora de trocasde r
-	//runs? Conferir tbm em para ver se existem posicoes muito grandes mesmo 
-	//de palavras
-        //cout << ">>" << run[i].lex << " " << run[i].doc << " " << run[i].pos << endl;
 	if (pos_arquivo<0){ 
 	    i = i+1;
 	    break;
@@ -161,7 +167,7 @@ void Ordena::ordena_run(int tam_run){
        v.push_back(run[i].lex);
        v.push_back(run[i].doc);
        v.push_back(run[i].pos);
-       pos_arquivo = escrita.escreve_tripla(v);
+       pos_arquivo = escrita->escreve_tripla(v);
        v.clear();
        if (pos_arquivo<0) break;
        
@@ -185,8 +191,11 @@ void Ordena::ordena_todas_runs(){
 	 escreve_run(tam_run);
 	 //cout << "POS_ARQUIVO: " << pos_arquivo << endl;
      }
-    if (escrita.pega_excedente()!=0)
-      escrita.escreve_excedente();
+
+    if(dynamic_cast<EscreveCompacta*>(escrita) != 0){
+        if (escrita->pega_excedente()!=0)
+          escrita->escreve_excedente();
+    }
 
 
 }
@@ -199,20 +208,19 @@ void Ordena::carrega_buffer_ordenacao(int* pos_prox){
 
     for(int i=0;i<num_conta_bits;i++){
        
-          leitura.inicia_conta_bits(conta_bits[i]);
+          leitura->inicia_conta_bits(conta_bits[i]);
 
-          termino_arquivo = leitura.ler_tripla(v,3);
+          termino_arquivo = leitura->ler_tripla(v,3);
           buffer_ordenacao[i].pos = v.back();
           v.pop_back();
           buffer_ordenacao[i].doc = v.back();
           v.pop_back();
           buffer_ordenacao[i].lex = v.back();
           v.pop_back();
-	  //a leitura esta correta? tem numeros estranho ou a escrita
-          //cout << ">> " << conta_bits[i] << " "<< buffer_ordenacao[i].lex << " " <<buffer_ordenacao[i].doc << " " << buffer_ordenacao[i].pos << endl;
+
           if (termino_arquivo > 0)
-                  pos_prox[i] = leitura.pega_conta_bits();
-          else pos_prox[i] = -leitura.pega_conta_bits();
+                  pos_prox[i] = leitura->pega_conta_bits();
+          else pos_prox[i] = -leitura->pega_conta_bits();
      }
 }
 
@@ -220,9 +228,9 @@ void Ordena::atualiza_buffer_ordenacao(int pos,int* pos_prox){
 
     vector<unsigned int> v;
 
-    leitura.inicia_conta_bits(conta_bits[pos]);
+    leitura->inicia_conta_bits(conta_bits[pos]);
 
-    int pos_arquivo = leitura.ler_tripla(v,3);
+    int pos_arquivo = leitura->ler_tripla(v,3);
     buffer_ordenacao[pos].pos = v.back();
     v.pop_back();
     buffer_ordenacao[pos].doc = v.back();
@@ -231,7 +239,7 @@ void Ordena::atualiza_buffer_ordenacao(int pos,int* pos_prox){
     v.pop_back();
 
     if (pos_arquivo >0 )
-       pos_prox[pos] = leitura.pega_conta_bits();
+       pos_prox[pos] = leitura->pega_conta_bits();
     else pos_prox[pos] = pos_arquivo;
 
 }
@@ -244,7 +252,7 @@ void Ordena::executa(Colecao& col){
     
     ordena_todas_runs();
 
-    leitura.inicia_nome_arquivo(escrita.pega_nome_arquivo());
+    leitura->inicia_nome_arquivo(escrita->pega_nome_arquivo());
 
     tripla_t min;
     vector<int> limites(conta_bits);
@@ -253,11 +261,11 @@ void Ordena::executa(Colecao& col){
 
     int num_conta_bits = conta_bits.size();
 
-
+    int old_lex,old_doc;
     int ntriplas = 0;
-    int atualiza_conta_bits = escrita_ordenada.pega_conta_bits();
+    int atualiza_conta_bits = escrita_ordenada->pega_conta_bits();
     int termino_arquivo = 1;
-    int* flag_lex_visitado = new int[col.pega_tamanho_vocabulario()]();
+    int* flag_lex_visitado = new int[col.pega_tamanho_vocabulario()+1]();
 
     //cout << "NUMERO DE TRIPLAS: " << conta_triplas << endl;
 
@@ -267,11 +275,19 @@ void Ordena::executa(Colecao& col){
     carrega_buffer_ordenacao(pos_prox);
 
     while(ntriplas<conta_triplas){
+
+	if (ntriplas > 0 ){
+	   old_doc = min.doc;
+	   old_lex = min.lex;
+	}else{
+	    old_lex = -1;
+	    old_doc = -1;
+	}
+
          min.lex = UINT_MAX;
          min.doc = UINT_MAX;
          min.pos = UINT_MAX;
 
-	 v.clear();
 
         for(int i=0;i<num_conta_bits;i++){
 	    //verificar se uma run nao 
@@ -294,23 +310,48 @@ void Ordena::executa(Colecao& col){
         }
 
 
-
 	conta_bits[min_conta_bits] = pos_prox[min_conta_bits];
 	atualiza_buffer_ordenacao(min_conta_bits,pos_prox);
-	//
+	
 
-	v.push_back(min.doc);
-	v.push_back(min.pos);
 
+	//primeira vez que esbarro neste lexico
+	if (flag_lex_visitado[min.lex] == 0){
+	    if (old_lex == -1 && old_doc == -1){
+		old_lex = min.lex;
+		old_doc = min.doc;
+	    }
+	}
+
+
+	//se trocar de documento.Escreve
+	if (old_doc!=min.doc){
+	    int num_pos = v.size();
+	    v.insert(v.begin(),num_pos);
+	    v.insert(v.begin(),old_doc);
+            escrita_ordenada->escreve_tripla(v);
+	    v.clear();
+	}else{
+	    //se nao trocou de documento, mas trocou de lexico. Escreve
+	    if (old_lex!=min.lex){
+	       int num_pos = v.size();
+	       v.insert(v.begin(),num_pos);
+	       v.insert(v.begin(),old_doc);
+               escrita_ordenada->escreve_tripla(v);
+	       v.clear();
+	    }
+	}
+
+	//primeira vez que esbarro neste lexico
 	if (flag_lex_visitado[min.lex] == 0){
 	    //acho que este conta_bits nao presta mais porque vou escrever 
 	    //em um novo arquivo
-	    col.atualiza_vocabulario(min.lex,escrita_ordenada.pega_conta_bits_global());
+	    col.atualiza_vocabulario(min.lex,escrita_ordenada->pega_conta_bits_global());
 	    flag_lex_visitado[min.lex] = 1;
 	}
+
+	v.push_back(min.pos);
     
-        escrita_ordenada.escreve_tripla(v);
-	// cout << "--> " <<  min.lex << " " << min.doc << " " << min.pos;
 	//cout << " " << escrita_ordenada.pega_conta_bits_global() << endl;
 
 
@@ -318,15 +359,27 @@ void Ordena::executa(Colecao& col){
 
 	ntriplas++;
     }
-    if (escrita_ordenada.pega_excedente()!=0)
-      escrita_ordenada.escreve_excedente();
+
+    //sera que no compactado anda escrevendo lixo?
+    if (v.size()!=0){
+	int num_pos = v.size();
+	v.insert(v.begin(),num_pos);
+	v.insert(v.begin(),old_doc);
+        escrita_ordenada->escreve_tripla(v);
+    }
+
+    if(dynamic_cast<EscreveCompacta*>(escrita) != 0 ){
+        if (escrita_ordenada->pega_excedente()!=0)
+         escrita_ordenada->escreve_excedente();
+    }
+
 
      //as runs ordenadas estao em um arquivo ordenado
      //entao vou pegar o conteudo do arquivo temporario e 
      //sobrecrever o arquivo original
      const char* narquivo = nome_arquivo.c_str();
-     const char* narquivo_run = escrita.pega_nome_arquivo().c_str();
-     const char* narquivo_ordenado = escrita_ordenada.pega_nome_arquivo().c_str();
+     const char* narquivo_run = escrita->pega_nome_arquivo().c_str();
+     const char* narquivo_ordenado = escrita_ordenada->pega_nome_arquivo().c_str();
 
      remove(narquivo_run);
      rename(narquivo_ordenado,narquivo);
