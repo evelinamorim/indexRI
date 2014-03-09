@@ -18,35 +18,55 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <cstring>
+#include <queue>
 #include "util.h"
 
 using namespace std;
+
 
 void converteParaMinusculo(string& s){
     /* COnverte uma string para minusculo */
     transform(s.begin(), s.end(), s.begin(), ::tolower);
 }
 
+void converteParaMinusculo_char(char* s){
+    if (s!=NULL){
+       int n= strlen(s);
+
+       for(int i=0;i<n-1;i++){
+ 	  s[i] = tolower(s[i]);
+       }
+    }
+}
+
 bool ehPontuacao(char c){
     return (c == ';' || c == ':' || c == '.' || c == '?' || c == ',' || c == '!' || c==')' || c=='(' || c == '\n' || c == '\t' || c == '\r' || c == '-');
 }
-vector<string> tokenizar(string s){
-    string::iterator it = s.begin();
-    vector<string> v;
 
-    string palavra = "";
+void tokenizar(string s,vector<string>& v){
+   string::iterator it = s.begin();
 
+   string palavra = "";
+    int palavra_tam = 0;
     while(it!=s.end()){
-	if (*it == ' ' || ehPontuacao(*it)){
-	    if (palavra.size() > 0) v.push_back(palavra);
-	    palavra = "";
+	if (palavra_tam>MAIOR_PALAVRA){
+	   if (palavra.size() > 0) v.push_back(palavra);
+	   palavra = "";
+	   palavra_tam = 0;
 	}else{
-	    palavra += *it;
+	    if (*it == ' ' || ehPontuacao(*it)){
+	       if (palavra.size() > 0) v.push_back(palavra);
+	       palavra = "";
+	       palavra_tam = 0;
+	    }else{
+	       palavra_tam++;
+	       palavra += *it;
+	   }
 	}
 	it++;
     }
 
-    return v;
 }
 
 
@@ -79,51 +99,54 @@ int para_codigo_unario(unsigned int x){
     return y;
 }
 
-unsigned int unario_para_int(vector<unsigned int>& x,int pos){
+unsigned int unario_para_int(deque<unsigned int>& x,int pos){
     //pegar unario a partir da posicao pos
+    //y eh o elemento sem o unario
 
     unsigned int cbits = 0;
-    bool naoterminado = true;
+     bool naoterminado = true;
 
     int i=pos;
     for(;i>=0;i--){
 	 if ((x.front() & (1 << i))!=0){
 	     cbits++;
 	     if (i==0 && naoterminado){
-		 x.erase(x.begin());
+		 //x.erase(x.begin());
+		 x.pop_front();
 		 i=32;
 	     }
 	 }else{
-	    naoterminado = false;
+	     naoterminado = false;
             break;
 	 } 
     }
 
+
     return cbits+1;
 }
 
-unsigned int gamma_para_int(vector<unsigned int>& x,unsigned int& nx,int pos){
+unsigned int gamma_para_int(deque<unsigned int>& x,unsigned int& nx,int pos){
 
     //transformar de gamma para int a partir do bit pos
 
     unsigned int cu;
     int tamx = x.size();
+    int pos_cb = pos+cu;//essa inicializacao eh valida quando cb e cu estao 
+
 
     cu = unario_para_int(x,pos);
 
 
+    unsigned int  y = x.front();
     nx = 2*cu-1;
 
-    unsigned int y = x.front();
     int cbits;
     cbits = 0;
     int resto = cu;
     int deslocamento = pos-(2*cu-1)+1;
-    int pos_cb = pos+cu;//essa inicializacao eh valida quando cb e cu estao 
     //no mesmo bit
 
     //zerando a parte unaria
-
     //neste caso a parte unaria esta dividida entre dois 
     //inteiros, entao a posicao do numero lido atualmente volta 
     //para o bit numero 31
@@ -137,13 +160,13 @@ unsigned int gamma_para_int(vector<unsigned int>& x,unsigned int& nx,int pos){
 	pos_cb = pos-resto;
     }
 
-    for(int i=pos;i>(pos-resto);i--){
+     for(int i=pos;i>(pos-resto);i--){
 	 if ((x.front() & (1 << i))!=0){
 	     y &= ~(1 << i);
 	     cbits++;
 	 }else{
 	     if (cbits!=0){
-		 pos_cb=i-1;
+		 pos_cb = i-1;
 		 break;
 	     } 
 	 }
@@ -158,7 +181,7 @@ unsigned int gamma_para_int(vector<unsigned int>& x,unsigned int& nx,int pos){
 	int qtd_bits_dir = fabs((pos_cb+1)-((int)cu-1));
 	qtd_bits_cb = qtd_bits_dir;
 
-        x.erase(x.begin());
+        x.pop_front();
 	//a primeira parte deste ou logico pega a primeira parte da parte
 	//binaria, e a segunda parte deve pegar a parte posterior do numero
 	//que acabou ficando em outro inteiro. Fazendo o ou logico
@@ -179,7 +202,9 @@ unsigned int gamma_para_int(vector<unsigned int>& x,unsigned int& nx,int pos){
    // cout << " 1: " << y << endl << endl;
 
     //verificando se acabou o buffer sem precisar particionar
-    if ((pos+1)!=nx) x[0] = y;
-    else x.erase(x.begin());
+    if ((pos+1)!=nx){ 
+	x[0] = y;
+    }
+    else x.pop_front();
     return numeroint;
 }

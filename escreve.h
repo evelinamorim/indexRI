@@ -35,7 +35,7 @@ class Escreve{
 
     public:
     Escreve(string narquivo);
-
+    virtual ~Escreve(){};
     //metodos get's e set's
     unsigned int pega_conta_bits_global();
     unsigned int pega_conta_bits();
@@ -46,9 +46,9 @@ class Escreve{
     int escreve_tripla(vector<unsigned int> v);
 
     //metodos virtuais puros
-    virtual void escreve_numero(unsigned int x) =0;
+    virtual void escreve_numero(unsigned int x,int tam_buffer) =0;
     virtual void carrega_buffer(int tam_buffer) =0;
-    virtual void escreve_buffer(ofstream& arquivo) =0;
+    virtual void escreve_buffer(ofstream& arquivo,int tam_buffer) =0;
 
     //metodos virtuais nao puros
     virtual void inicia_excedente(unsigned int e){};
@@ -59,10 +59,11 @@ class Escreve{
 class EscreveNormal: public Escreve{
     public:
     EscreveNormal(string narquivo);
+    ~EscreveNormal();
     //metodos de escrita
-    void escreve_numero(unsigned int x);
+    void escreve_numero(unsigned int x,int tam_buffer);
     void carrega_buffer(int tam_buffer);
-    void escreve_buffer(ofstream& arquivo);
+    void escreve_buffer(ofstream& arquivo,int tam_buffer);
 };
 
 
@@ -71,11 +72,12 @@ class EscreveCompacta: public Escreve{
     unsigned int *excedente;
     public:
     EscreveCompacta(string narquivo);
+    ~EscreveCompacta();
 
     //metodos de escrita
-    void escreve_numero(unsigned int x);
+    void escreve_numero(unsigned int x,int tam_buffer);
     void carrega_buffer(int tam_buffer);
-    void escreve_buffer(ofstream& arquivo);
+    void escreve_buffer(ofstream& arquivo,int tam_buffer);
 
     //metodos relacionados com o excedente de bits que 
     //a escrita compactada pode gerar

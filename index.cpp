@@ -44,14 +44,17 @@ int main(int argc,char** argv){
     Colecao *col = new Colecao(compacta);
 
     //le a colecao e controi o indice desordenado
-    col->ler(dirEntrada,nomeIndice);
+   // col->ler(dirEntrada,nomeIndice);
 
-    Ordena *ordenar = new Ordena(col->pega_nome_arquivo_indice(),compacta);
+   Ordena *ordenar = new Ordena(col->pega_nome_arquivo_indice(),compacta);
 
+   cout << "Antes de orndenar" << endl;
     ordenar->executa(*col);
 
-    col->escreve_vocabulario();
+   col->escreve_vocabulario();
 
+    delete col;
+    delete ordenar;
     return 0;
 }
 

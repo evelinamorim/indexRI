@@ -31,6 +31,8 @@ Escreve::Escreve(string narquivo){
     nome_arquivo = narquivo;
 }
 
+
+
 void Escreve::inicia_conta_bits(unsigned int cb){
     conta_bits = cb;
 }
@@ -63,10 +65,10 @@ int Escreve::escreve_tripla(vector<unsigned int> v){
 
 
 	for(it=v.begin();it!=v.end();it++){
-	    escreve_numero(*it);
+	    escreve_numero(*it,2*tamv);
 	}
 
-	escreve_buffer(arquivo);
+	escreve_buffer(arquivo,2*tamv);
 
 	pos_arquivo = arquivo.tellp();
 
@@ -81,7 +83,9 @@ int Escreve::escreve_tripla(vector<unsigned int> v){
 
 EscreveNormal::EscreveNormal(string narquivo): Escreve(narquivo){}
 
-void EscreveNormal::escreve_numero(unsigned int x){
+EscreveNormal::~EscreveNormal(){}
+
+void EscreveNormal::escreve_numero(unsigned int x,int tam_buffer){
     conta_bits_global += 32;
 
     //posicao no buffer que o numero deve ficar
@@ -95,7 +99,7 @@ void EscreveNormal::carrega_buffer(int tamv){
     buffer = new unsigned int[tamv]();
 }
 
-void EscreveNormal::escreve_buffer(ofstream& arquivo){
+void EscreveNormal::escreve_buffer(ofstream& arquivo,int tam_buffer){
     //quantidade de bytes que esta no buffer
     int nint = ceil(conta_bits/32.0);
 
@@ -111,6 +115,11 @@ EscreveCompacta::EscreveCompacta(string narquivo): Escreve(narquivo){
     *excedente = 0;
 }
 
+EscreveCompacta::~EscreveCompacta()
+{
+   delete[] excedente;
+}
+
 void EscreveCompacta::inicia_excedente(unsigned int e){
     *excedente = e;
 }
@@ -119,7 +128,7 @@ unsigned int EscreveCompacta::pega_excedente(){
     return *excedente;
 }
 
-void EscreveCompacta::escreve_numero(unsigned int x){
+void EscreveCompacta::escreve_numero(unsigned int x,int tam_buffer){
     //guarda numero em um buffer
     unsigned int ny = 0;
     unsigned int y;
@@ -133,6 +142,7 @@ void EscreveCompacta::escreve_numero(unsigned int x){
     //posicao dentro do "bucket" do buffer para escrever
     int j = conta_bits % 32;
 
+    //if ((32-j) < ny){
     if ((32-j) < ny){
 	//quantidade de bits para escrever eh maior que a quantidade 
 	//disponivel no bucket atual
@@ -154,8 +164,8 @@ void EscreveCompacta::escreve_numero(unsigned int x){
 }
 
 void EscreveCompacta::carrega_buffer(int tamv){
-    buffer = new unsigned int[tamv]();
-    for(int i=0;i<tamv;i++){
+    buffer = new unsigned int[(2*tamv)+1]();
+    for(int i=0;i<(2*tamv)+1;i++){
        buffer[i]=0;
     }	    
     
@@ -167,13 +177,18 @@ void EscreveCompacta::carrega_buffer(int tamv){
     }	
 }
 
-void EscreveCompacta::escreve_buffer(ofstream& arquivo){
+void EscreveCompacta::escreve_buffer(ofstream& arquivo,int tam_buffer){
     //quantidade de bytes que esta no buffer que devo escrever
     int nbytes = ceil(conta_bits/8);
     int nint = floor(conta_bits/32.0);
 
+ /* for (int i = 0;i< nint;i++){
+	cout << "write buffer[" << i << "] = " <<buffer[i] << endl;
+    }*/ 
+
     //se houver excedente, deixa como excedente que a proxima escrita resolve
     if (conta_bits % 32 !=0 ){
+	if (nint > tam_buffer) cout << "UAU: " << nint << endl;
 	*excedente = buffer[nint];
 	conta_bits = conta_bits % 32;
     }else{

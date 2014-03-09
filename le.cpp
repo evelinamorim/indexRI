@@ -36,6 +36,7 @@ Le::Le(string narquivo){
     }
 }
 
+
 void Le::inicia_nome_arquivo(string narquivo){
     nome_arquivo = narquivo;
 }
@@ -48,7 +49,7 @@ void Le::inicia_conta_bits(unsigned int cb){
     conta_bits = cb;
 }
 
-int Le::ler_tripla_pos(vector<unsigned int>& v,int pos){
+int Le::ler_tripla_pos(deque<unsigned int>& v,int pos){
     //esta funcao le tripla ateh a posicao de bit dada
     ifstream arquivo(nome_arquivo,ios::in|ios::binary);
     int pos_arquivo;
@@ -63,6 +64,7 @@ int Le::ler_tripla_pos(vector<unsigned int>& v,int pos){
 
         while(conta_bits < pos){
 	    v.push_back(ler_numero());
+
 
 	    if (arquivo.eof() && buffer[0]==0)
 	       pos_arquivo = -1;
@@ -81,18 +83,20 @@ int Le::ler_tripla_pos(vector<unsigned int>& v,int pos){
 
 	arquivo.close();
     }else{
-	cout << "Ler::ler_tripla::Unable to open file." << endl;
+	cout << "Ler::ler_tripla_pos::Unable to open file." << endl;
     }
 
     return pos_arquivo;
 }
 
-int Le::ler_tripla(vector<unsigned int>& v,int nnum){
+int Le::ler_tripla(deque<unsigned int>& v,int nnum){
 
     //esta funcao le apenas uma tripla, dada a posicao atual do arquivo
     //depois atualiza pos com a nova posicao
     ifstream arquivo(nome_arquivo,ios::in|ios::binary);
-    int pos_arquivo;
+    int pos_arquivo = 0;
+    streampos parquivo;
+
 
     if (arquivo.is_open()){
 
@@ -102,21 +106,39 @@ int Le::ler_tripla(vector<unsigned int>& v,int nnum){
 
         for(int i=0;i<nnum;i++){
 	    v.push_back(ler_numero());
+	    parquivo = arquivo.tellg();
+
+
+	     if (buffer.size() != 0){
+		//buffer zero nem sempre eh condicao de parada. Pode ter o numero 1 em unario la
+		//TODO: Nao da final de lida por algum motivo
+	        if ((parquivo == tamanho_arquivo || arquivo.eof())){
+		     cout << "Leitura: " << i << " "<< buffer[0] << " ";
+		     if ( buffer[0] == 0){
+			 if (buffer.size() > 1){
+                             cout << buffer[1] ;
+			     //pode ter mais bits para frente
+		             if (buffer[1] ==0){
+				 //se nao houver bits mais para frente acabou mesmo
+				 pos_arquivo = -1;
+			     } else pos_arquivo = 1;
+			 }else   pos_arquivo = -1;
+		     }else pos_arquivo = 1;
+		     cout << endl;
+		}
+	    }else{
+	        if (parquivo == tamanho_arquivo) 
+		   pos_arquivo = -1;
+	        else{
+		    parquivo = arquivo.tellg();
+		    pos_arquivo = 1;
+		} 
+	    }
+
+	    if (pos_arquivo<0) break;
 	}
 
-	pos_arquivo = arquivo.tellg();
 
-	if (buffer.size() != 0){
-	    if (pos_arquivo == tamanho_arquivo && buffer[0]==0)
-	       pos_arquivo = -1;
-	    else{
-	       if (pos_arquivo < 0 && buffer[0]!=0)  pos_arquivo = 1;
-	   }
-	}else{
-	    if (pos_arquivo == tamanho_arquivo) 
-		pos_arquivo = -1;
-	    else pos_arquivo = arquivo.tellg();
-	}
 
 	arquivo.close();
     }else{
@@ -127,8 +149,11 @@ int Le::ler_tripla(vector<unsigned int>& v,int nnum){
 
 }
 
+
 /*Aqui estao os metodos da classe que faz leitura de inteiros em arquivo NAO compactado*/
 LeNormal::LeNormal(string narquivo):Le(narquivo){}
+
+LeNormal::~LeNormal(){}
 
 void LeNormal::carrega_buffer(ifstream& arquivo,int nnum){
     //carrega buffer com os numeros a serem decodificados
@@ -141,8 +166,9 @@ void LeNormal::carrega_buffer(ifstream& arquivo,int nnum){
        arquivo.read((char*) &buf[i],sizeof(int));
 
 
-    for(int i=0;i<nnum;i++)
+    for(int i=0;i<nnum;i++){
        buffer.push_back(buf[i]);
+    }
 
     delete[] buf;
 }
@@ -150,7 +176,7 @@ void LeNormal::carrega_buffer(ifstream& arquivo,int nnum){
 int LeNormal::ler_numero(){
 
     int numero = buffer.front();
-    buffer.erase(buffer.begin());
+    buffer.pop_front();
 
     conta_bits += 32;
 
@@ -161,14 +187,16 @@ int LeNormal::ler_numero(){
 
 LeCompacta::LeCompacta(string narquivo):Le(narquivo){}
 
+LeCompacta::~LeCompacta(){}
+
 void LeCompacta::carrega_buffer(ifstream& arquivo,int nnum){
     //carrega buffer com os numeros a serem decodificados
 
     buffer.clear();
 
-    unsigned int *buf = new unsigned int[2*nnum]();
+    unsigned int *buf = new unsigned int[nnum+1]();
 
-    for(int i=0;i<2*nnum;i++)
+    for(int i=0;i<nnum+1;i++)
        arquivo.read((char*) &buf[i],sizeof(int));
 
     //bits ja lidos devem ser zerados. Devem existir pos_bit's para zerar
@@ -179,8 +207,10 @@ void LeCompacta::carrega_buffer(ifstream& arquivo,int nnum){
     }
 
 
-    for(int i=0;i<2*nnum;i++)
+    for(int i=0;i<nnum+1;i++){
+	//cout << "reading buffer["<< i << "] = " << buf[i] << endl;
        buffer.push_back(buf[i]);
+    }
 
     delete[] buf;
 }
@@ -191,6 +221,7 @@ int LeCompacta::ler_numero(){
     int pos_bit = conta_bits % 32;
     unsigned int nx;
 
+    //int numero = gamma_para_int(buffer,nx,31-pos_bit);
     int numero = gamma_para_int(buffer,nx,31-pos_bit);
 
     conta_bits += nx;

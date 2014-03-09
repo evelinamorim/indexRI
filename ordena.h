@@ -17,12 +17,11 @@
  * =====================================================================================
  */
 
-//TODO: depois mudar este tamanho. No momento eh soh para teste
-#define TAMANHO_RUN 5
 
 #include "le.h"
 #include "escreve.h"
 #include "colecao.h"
+#include "util.h"
 
 #include <unordered_map>
 
@@ -52,6 +51,7 @@ class Ordena{
 
     public:
     Ordena(string narquivo,bool compacta);
+    ~Ordena();
 
     int carrega_run(int& pos_arquivo);
     void ordena_run(int tam_run);

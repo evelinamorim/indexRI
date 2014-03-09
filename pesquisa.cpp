@@ -114,7 +114,6 @@ unordered_map<unsigned int,vector<unsigned int> > Pesquisa::executa(string palav
 	  doc = v.back();
 	  v.pop_back();
 
-
 	  v.clear();
           final_arquivo = leitura->ler_tripla(v,freq);
           resultado[doc] = v;
@@ -140,7 +139,7 @@ void Pesquisa::imprime_docs_resultados(unordered_map<unsigned int,vector<unsigne
 	if (resultado.find(i)!=resultado.end()){
 	   cout << "DOCUMENTO " << i << endl;
 	   cout << "[" << doc.getURL() << "]" << endl;
-	   //cout << doc.getText() << endl << endl;
+	  // cout << doc.getText() << endl << endl;
 	}
 	///tree<htmlcxx::HTML::Node> dom = parser.parseTree(doc.getText());
 

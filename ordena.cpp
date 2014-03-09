@@ -22,6 +22,7 @@
 #include "ordena.h"
 
 #include <iostream>
+#include <deque>
 #include <cstdlib>
 #include <climits>
 #include <cstdio>
@@ -55,30 +56,36 @@ Ordena::Ordena(string narquivo,bool compacta){
     conta_triplas = 0;
 }
 
+Ordena::~Ordena(){
+    delete escrita;
+    delete escrita_ordenada;
+    delete leitura;
+    if (run !=NULL)  delete[] run;
+}
+
 int Ordena::carrega_run(int& pos_arquivo){
 
     conta_bits.push_back(leitura->pega_conta_bits());
-    vector<unsigned int> v;
-
+    deque<unsigned int> v;
     int i;
    // cout << "RUN" << endl;
-    for(i=0;i<TAMANHO_RUN;i++){
-	pos_arquivo = leitura->ler_tripla(v,3);
-	run[i].pos = v.back();
-	v.pop_back();
-	run[i].doc = v.back();
-	v.pop_back();
-	run[i].lex = v.back();
-	v.pop_back();
+   //TODO: ver como tirar  leitura  daqui. Visto que aqui eu sei o numero de 
+   //triplas a serem lidas. Acho que vou ter que mudar a funcao de leitura
+    pos_arquivo = leitura->ler_tripla(v,3*TAMANHO_RUN);
+    int n = (v.size()/3);
+
+    for(i=0;i<n;i++){
+
+
+	run[i].lex = v.at(3*i);
+	run[i].doc = v.at(3*i+1);
+	run[i].pos = v.at(3*i+2);
+
 	conta_triplas++;
-	if (pos_arquivo<0){ 
-	    i = i+1;
-	    break;
-	}
     }
     //cout << endl;
 
-    return i;
+    return (v.size()/3);
 }
 
 int Ordena::compara_triplas(tripla_t a,tripla_t b){
@@ -137,8 +144,8 @@ void Ordena::merge_run(int i,int m,int f){
 	    l++;
 	}
     } 
-    delete[] dir;
-    delete[] esq;
+    if (dir!=NULL) delete[] dir;
+    if (esq!=NULL) delete[] esq;
 
 }
 
@@ -167,11 +174,11 @@ void Ordena::ordena_run(int tam_run){
        v.push_back(run[i].lex);
        v.push_back(run[i].doc);
        v.push_back(run[i].pos);
-       pos_arquivo = escrita->escreve_tripla(v);
-       v.clear();
-       if (pos_arquivo<0) break;
        
    }
+
+   //TODO: isso estava dentro do laco de repeticao
+   pos_arquivo = escrita->escreve_tripla(v);
 
     return pos_arquivo;
 }
@@ -179,17 +186,18 @@ void Ordena::ordena_run(int tam_run){
 void Ordena::ordena_todas_runs(){
 
      int pos_arquivo = 0;
-     cout << "RUN ORDENADA" << endl;
+     int i = 0;
      while (pos_arquivo >= 0){
+	 cout << "Carregando run" << endl;
          int tam_run = carrega_run(pos_arquivo);
+	 cout << "POS_ARQUIVO: " << pos_arquivo << " " << i << endl;
 	 ordena_run(tam_run);
 	 //Acho que esta ok aqui. Visto que as triplas estao ordenadas por run
 	 /*for (int i=0;i<tam_run;i++){
 	     cout << ">>> " << run[i].lex << " " << run[i].doc << " " << run[i].pos <<endl; 
 	 }*/
-
+         i++;
 	 escreve_run(tam_run);
-	 //cout << "POS_ARQUIVO: " << pos_arquivo << endl;
      }
 
     if(dynamic_cast<EscreveCompacta*>(escrita) != 0){
@@ -203,7 +211,7 @@ void Ordena::ordena_todas_runs(){
 void Ordena::carrega_buffer_ordenacao(int* pos_prox){
 
     int num_conta_bits = conta_bits.size();
-    vector<unsigned int> v;
+    deque<unsigned int> v;
     int termino_arquivo;
 
     for(int i=0;i<num_conta_bits;i++){
@@ -218,7 +226,7 @@ void Ordena::carrega_buffer_ordenacao(int* pos_prox){
           buffer_ordenacao[i].lex = v.back();
           v.pop_back();
 
-          if (termino_arquivo > 0)
+          if (termino_arquivo >= 0)
                   pos_prox[i] = leitura->pega_conta_bits();
           else pos_prox[i] = -leitura->pega_conta_bits();
      }
@@ -226,7 +234,7 @@ void Ordena::carrega_buffer_ordenacao(int* pos_prox){
 
 void Ordena::atualiza_buffer_ordenacao(int pos,int* pos_prox){
 
-    vector<unsigned int> v;
+    deque<unsigned int> v;
 
     leitura->inicia_conta_bits(conta_bits[pos]);
 
@@ -267,14 +275,18 @@ void Ordena::executa(Colecao& col){
     int termino_arquivo = 1;
     int* flag_lex_visitado = new int[col.pega_tamanho_vocabulario()+1]();
 
-    //cout << "NUMERO DE TRIPLAS: " << conta_triplas << endl;
+    //TODO: parece ter mais lexico que o que pegou no vocabulario?
+    cout << "NUMERO DE TRIPLAS: " << conta_triplas << " " << col.pega_tamanho_vocabulario()<< endl;
 
     buffer_ordenacao = new tripla_t[num_conta_bits]();
     int* pos_prox = new int[num_conta_bits]();
 
     carrega_buffer_ordenacao(pos_prox);
 
+    //TODO: algum problema neste laco
     while(ntriplas<conta_triplas){
+       //cout << "Inicio do Laco que escolhe menor tripla " << conta_triplas << " "<< ntriplas << endl;
+
 
 	if (ntriplas > 0 ){
 	   old_doc = min.doc;
@@ -310,8 +322,13 @@ void Ordena::executa(Colecao& col){
         }
 
 
-	conta_bits[min_conta_bits] = pos_prox[min_conta_bits];
-	atualiza_buffer_ordenacao(min_conta_bits,pos_prox);
+	//cout << "Minimo escolhido: " << min.lex << " " << min.doc << " " << min.pos << " " << flag_lex_visitado[min.lex] << endl;
+	//se esta no final de conta bits tbm
+	if (ntriplas != (conta_triplas-1) && (min_conta_bits < num_conta_bits)){
+	    //na ultima tripla nao precisa acessar o proximo
+	   conta_bits[min_conta_bits] = pos_prox[min_conta_bits];
+	   atualiza_buffer_ordenacao(min_conta_bits,pos_prox);
+	}
 	
 
 
@@ -346,6 +363,7 @@ void Ordena::executa(Colecao& col){
 	if (flag_lex_visitado[min.lex] == 0){
 	    //acho que este conta_bits nao presta mais porque vou escrever 
 	    //em um novo arquivo
+	    //cout << "Inicio Buffer do minimo: " << min.lex << " " << min.doc << " " << min.pos << " " << escrita_ordenada->pega_conta_bits_global()<< endl;
 	    col.atualiza_vocabulario(min.lex,escrita_ordenada->pega_conta_bits_global());
 	    flag_lex_visitado[min.lex] = 1;
 	}
@@ -354,11 +372,13 @@ void Ordena::executa(Colecao& col){
     
 	//cout << " " << escrita_ordenada.pega_conta_bits_global() << endl;
 
-
-	//cout << "Tripla no.: " << ntriplas << endl;
+   //  cout << ">> " << ntriplas << " " << conta_triplas << endl;
+     //  cout << "Ponta do Laco que escolhe menor tripla " << conta_triplas << " "<< ntriplas << endl;
 
 	ntriplas++;
     }
+
+   // cout << "Fim do laco " << conta_triplas << endl;
 
     //sera que no compactado anda escrevendo lixo?
     if (v.size()!=0){
@@ -367,6 +387,8 @@ void Ordena::executa(Colecao& col){
 	v.insert(v.begin(),old_doc);
         escrita_ordenada->escreve_tripla(v);
     }
+
+   // cout << "Escreveu ultima tripla " << endl;
 
     if(dynamic_cast<EscreveCompacta*>(escrita) != 0 ){
         if (escrita_ordenada->pega_excedente()!=0)
@@ -377,15 +399,16 @@ void Ordena::executa(Colecao& col){
      //as runs ordenadas estao em um arquivo ordenado
      //entao vou pegar o conteudo do arquivo temporario e 
      //sobrecrever o arquivo original
-     const char* narquivo = nome_arquivo.c_str();
+    const char* narquivo = nome_arquivo.c_str();
      const char* narquivo_run = escrita->pega_nome_arquivo().c_str();
      const char* narquivo_ordenado = escrita_ordenada->pega_nome_arquivo().c_str();
 
      remove(narquivo_run);
      rename(narquivo_ordenado,narquivo);
 
-     delete[] flag_lex_visitado;
-     delete[] buffer_ordenacao;
+     if (flag_lex_visitado!=NULL) delete[] flag_lex_visitado;
+     if (buffer_ordenacao!=NULL) delete[] buffer_ordenacao;
+     if (pos_prox!=NULL) delete[] pos_prox;
 
 }
 
