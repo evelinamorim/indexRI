@@ -79,11 +79,15 @@ bool arquivoExiste(const string nomeArquivo){
 
 void para_codigo_gamma(unsigned int x,unsigned int& y,unsigned int& ny){
     ny = 0;
-    int lpiso = floor(log2(x));
+    unsigned int tmpx = x;
+    //int lpiso = floor(log2(x));
+    int lpiso =0;
+    unsigned int um = 1;
+    while (tmpx>>=um) lpiso++;
 
     ny = ny + (2*lpiso) + 1;
     int cunario = para_codigo_unario(lpiso+1);
-    int pbinaria = x-pow(2,lpiso);
+    int pbinaria = x-( um << lpiso);
 
     y = cunario;
     y = y << lpiso;
@@ -131,10 +135,11 @@ unsigned int gamma_para_int(deque<unsigned int>& x,unsigned int& nx,int pos){
 
     unsigned int cu;
     int tamx = x.size();
-    int pos_cb = pos+cu;//essa inicializacao eh valida quando cb e cu estao 
 
 
     cu = unario_para_int(x,pos);
+
+    int pos_cb = pos+cu;//essa inicializacao eh valida quando cb e cu estao 
 
 
     unsigned int  y = x.front();
