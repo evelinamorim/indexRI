@@ -23,7 +23,7 @@
 using namespace std;
 
 /* Metodos da classe Escreve */
-
+int conta_numeros = 0;
 //construtor
 Escreve::Escreve(string narquivo){
     conta_bits = 0;
@@ -33,15 +33,15 @@ Escreve::Escreve(string narquivo){
 
 
 
-void Escreve::inicia_conta_bits(unsigned int cb){
+void Escreve::inicia_conta_bits(unsigned long int cb){
     conta_bits = cb;
 }
 
-unsigned int Escreve::pega_conta_bits(){
+unsigned long int Escreve::pega_conta_bits(){
     return conta_bits;
 }
 
-unsigned int Escreve::pega_conta_bits_global(){
+unsigned long int Escreve::pega_conta_bits_global(){
     return conta_bits_global;
 }
 
@@ -63,9 +63,9 @@ streampos Escreve::escreve_tripla(vector<unsigned int> v){
         
         vector<unsigned int>::iterator it;
         
-        
         for(it=v.begin();it!=v.end();it++){
             escreve_numero(*it,2*tamv);
+	    conta_numeros++;
         }
         
         escreve_buffer(arquivo,2*tamv);
@@ -131,8 +131,12 @@ unsigned int EscreveCompacta::pega_excedente(){
 void EscreveCompacta::escreve_numero(unsigned int x,int tam_buffer){
     //guarda numero em um buffer
     unsigned int ny = 0;
-    unsigned int y;
+
+    unsigned int long y=0;
+    unsigned int long um = 1;
     para_codigo_gamma(x,y,ny);
+
+
     conta_bits_global += ny;
     
     
@@ -141,23 +145,46 @@ void EscreveCompacta::escreve_numero(unsigned int x,int tam_buffer){
     
     //posicao dentro do "bucket" do buffer para escrever
     int j = conta_bits % 32;
-    
+
     //if ((32-j) < ny){
     if ((32-j) < ny){
         //quantidade de bits para escrever eh maior que a quantidade
-        //disponivel no bucket atual
-        int deslocamento = ny - (32-j);
+        //disponivel no bucket atuala
+	
+	//e se ny for maior que 32 bits?Assumindo que nao havera mais 
+	//que 64 bits
+	int deslocamento;
+        deslocamento = ny - (32-j);
         
+	//OK
         for(int k=0;k<(32-j);k++) buffer[i] &= ~(1<<k);
         buffer[i] |= (y>>(deslocamento));
         
+	//apagar em y quem foi para o buffer 0
+        //for(int k=ny;k>(deslocamento);k--) y &= ~(um<<k);
+        for(int k=ny;k>=(deslocamento);k--) y &= ~(um<<k);
+	    
+
         buffer[i+1] = 0;
-        for(int k=31;k<(32-deslocamento);k--) buffer[i+1] &= ~(1<<k);
-        buffer[i+1] |= (y << (32-deslocamento));
+	if (deslocamento<=32){
+           for(int k=31;k>(32-deslocamento);k--) buffer[i+1] &= ~(1<<k);
+           buffer[i+1] |= (y << (32-deslocamento));
+	}else{
+           buffer[i+1] |= y >> (deslocamento-32);
+
+	   //apagar em y quem foi para o buffer 1
+           for(int k=deslocamento;k>(deslocamento-32);k--){
+	       y &= ~(um<<k);
+	   }
+
+	   //quantos bits sobraram para o ultimo bucket?
+	   int resto = deslocamento-32;
+	   buffer[i+2] |= y << (32-resto);
+	}
         conta_bits += ny;
     }else{
         int deslocamento = (32-j)-ny;
-        for(int k=(32-j);k<deslocamento;k--) buffer[i] &= ~(1<<k);
+        for(int k=(31-j);k>=deslocamento;k--) buffer[i] &= ~(1<<k);
         buffer[i] |= (y << deslocamento);
         conta_bits += ny;
     }
