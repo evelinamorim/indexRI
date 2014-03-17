@@ -16,6 +16,7 @@
  * =====================================================================================
  */
 int testeuou = 0;
+int testepalavras = 0;
 #include "colecao.h"
 #include "CollectionReader.h"
 #include "util.h"
@@ -29,14 +30,15 @@ int testeuou = 0;
 #include <cstdio>
 #include <regex>
 #include <cstring>
+#include <ctime>
 #include <htmlcxx/html/Node.h>
 #include <htmlcxx/html/ParserDom.h>
 
 using namespace std;
 using namespace RICPNS;
 
-const string Colecao::nome_arquivo_indice="index_descompactada.bin";
-const string Colecao::nome_arquivo_vocabulario="voc_descompactada.txt";
+const string Colecao::nome_arquivo_indice="index.bin";
+const string Colecao::nome_arquivo_vocabulario="voc.txt";
 
 Colecao::~Colecao(){
 
@@ -74,6 +76,8 @@ void Colecao::ler(string dirEntrada,string nomeIndice){
     doc.clear();
 
     int i = 1;
+    clock_t  t;
+    t = clock();
     while(leitor->getNextDocument(doc)){
 
 	
@@ -87,8 +91,11 @@ void Colecao::ler(string dirEntrada,string nomeIndice){
 
 	++i;
     }
+    t = clock() - t;
+    cout << "Tempo Colecao::ler: "<< ((float)t/CLOCKS_PER_SEC) << "s" << endl;
 
     cout << "Colecao::Numero triplas: " << testeuou << endl;
+    cout << "Colecao::Numero de palavras: " << testepalavras << endl;
 
 
     //finaliza o armazenamento aqui
@@ -161,6 +168,7 @@ void Colecao::ler(string dirEntrada,string nomeIndice){
 			  if (tmp!=NULL)
 			     free(tmp);
 
+			  testepalavras++;
 		          if (vocabulario.find(palavra) == vocabulario.end()){
 
 			       buffer_chaves[contaPalavras] = new char[tamanho_palavra+1];
@@ -222,7 +230,7 @@ void Colecao::armazena_termos_doc(unordered_map<int,vector<int> >&  termos_pos,i
             v.push_back(it_termo->first);
 	    v.push_back(doc);
             v.push_back(*it_pos);
-	    //cout << ">> " << *it_pos << " " << doc << " "  << it_termo->first << endl;
+	    //cout << "==> " << *it_pos << " " << doc << " "  << it_termo->first << endl;
 
        
 	   //  vector<unsigned int>().swap(v);
@@ -233,6 +241,7 @@ void Colecao::armazena_termos_doc(unordered_map<int,vector<int> >&  termos_pos,i
     //TODO: estava dentro do laco de repeticao
     escrita->escreve_tripla(v);
     testeuou += v.size();
+    //cout<<"Escrevendo "<<testeuou<<" triplas com "<<escrita->pega_conta_bits_global()<<endl;
 
     //cout << "Armazena: " << v.size() << endl;
 
@@ -249,7 +258,7 @@ void Colecao::armazena_termos_doc(unordered_map<int,vector<int> >&  termos_pos,i
 }
 
     
-void Colecao::atualiza_vocabulario(int lex,int pos){
+void Colecao::atualiza_vocabulario(int lex,unsigned long int pos){
     vocabulario[vocabulario_invertido[lex]] = pos;
 }
 
@@ -257,7 +266,7 @@ void Colecao::escreve_vocabulario(){
     ofstream arquivo (nome_arquivo_vocabulario, ios::out|ios::app);
     if (arquivo.is_open()){
 
-        unordered_map<char*,int>::iterator it_voc = vocabulario.begin();
+        unordered_map<char*,unsigned long int>::iterator it_voc = vocabulario.begin();
         int i=1;
 	int ntermos = vocabulario_invertido.size();
         while(i<=ntermos){

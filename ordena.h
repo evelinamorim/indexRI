@@ -43,7 +43,7 @@ class Ordena{
     tripla_t* run;
     string nome_arquivo;
     //este vetor eh para marcar a posicao de inicio de cada run
-    vector<int> conta_bits;
+    vector<unsigned long int> conta_bits;
     int conta_triplas;
     streampos tamanho_arquivo;
 
@@ -60,8 +60,8 @@ class Ordena{
     int compara_triplas(tripla_t a,tripla_t b);
     void merge_run(int i,int m,int f);
     void executa(Colecao& col);
-    void atualiza_buffer_ordenacao(int pos,int* pos_prox);
-    void carrega_buffer_ordenacao(int* pos_prox);
+    void atualiza_buffer_ordenacao(int pos,unsigned long int* pos_prox);
+    void carrega_buffer_ordenacao(unsigned long int* pos_prox);
 };
 
 #endif

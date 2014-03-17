@@ -1,3 +1,4 @@
+
 /*
  * =====================================================================================
  *
@@ -27,8 +28,8 @@ using namespace std;
 
 class Escreve{
     protected:
-    unsigned int conta_bits;
-    unsigned int conta_bits_global;
+    unsigned long int conta_bits;
+    unsigned long int conta_bits_global;
     unsigned int* buffer;
     vector<int> pilha_buffer;
     string nome_arquivo;
@@ -37,13 +38,13 @@ class Escreve{
     Escreve(string narquivo);
     virtual ~Escreve(){};
     //metodos get's e set's
-    unsigned int pega_conta_bits_global();
-    unsigned int pega_conta_bits();
+    unsigned long int pega_conta_bits_global();
+    unsigned long int pega_conta_bits();
     string pega_nome_arquivo();
-    void inicia_conta_bits(unsigned int cb);
+    void inicia_conta_bits(unsigned long int cb);
 
     //metodos de escrita
-    int escreve_tripla(vector<unsigned int> v);
+    streampos escreve_tripla(vector<unsigned int> v);
 
     //metodos virtuais puros
     virtual void escreve_numero(unsigned int x,int tam_buffer) =0;
@@ -87,3 +88,4 @@ class EscreveCompacta: public Escreve{
 };
 
 #endif
+

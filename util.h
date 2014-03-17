@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 
-
+#include <time.h>
 #include <algorithm>
 #include <string>
 #include <deque>
@@ -30,7 +30,7 @@
 #define MAIOR_PALAVRA 20
 #define TAM_VOC 20000000
 //TODO: depois mudar este tamanho. No momento eh soh para teste
-#define TAMANHO_RUN 5000000
+#define TAMANHO_RUN 1000000
 
 using namespace std;
 
@@ -45,7 +45,8 @@ bool arquivoExiste(const string nomeArquivo);
 
 int para_codigo_unario(unsigned int x);
 
-void para_codigo_gamma(unsigned int x,unsigned int& y,unsigned int &ny);
+void para_codigo_gamma(unsigned int x,unsigned long int& y,unsigned int &ny);
+
 
 unsigned int unario_para_int(deque<unsigned int>& x,int pos);
 

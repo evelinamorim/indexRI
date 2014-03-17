@@ -96,8 +96,8 @@ class Colecao{
     //lista de documentos
     //TODO: nao carregar tudo na memoria?
     //vector<Documento> lista;
-    unordered_map<char*,int,Hash_Func,eqstr> vocabulario;
-    unordered_map<int,char*> vocabulario_invertido;
+    unordered_map<char*,unsigned long int,Hash_Func,eqstr> vocabulario;
+    unordered_map<unsigned long int,char*> vocabulario_invertido;
 
     char** buffer_chaves;
     int contaPalavras;
@@ -115,7 +115,7 @@ class Colecao{
     const string pega_nome_arquivo_indice();
     int pega_tamanho_vocabulario();
 
-    void atualiza_vocabulario(int lex,int pos);
+    void atualiza_vocabulario(int lex,unsigned long int pos);
     void escreve_vocabulario();
     vector<int>  carrega_vocabulario(const string arquivo_vocabulario);
     int pega_lexico_inteiro(string p);

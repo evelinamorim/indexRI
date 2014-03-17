@@ -29,7 +29,7 @@ class Le{
     protected:
     deque<unsigned int> buffer;
     string nome_arquivo;
-    unsigned int conta_bits;
+    unsigned long int conta_bits;
     streampos tamanho_arquivo;
 
     public:
@@ -38,7 +38,7 @@ class Le{
     //metodos de get's e set's
     void inicia_nome_arquivo(string narquivo);
     void inicia_conta_bits(unsigned int cb);
-    int pega_conta_bits();
+    unsigned long int pega_conta_bits();
 
     int ler_tripla(deque<unsigned int>& v,int nnum);
     int ler_tripla_pos(deque<unsigned int>& v,int pos);

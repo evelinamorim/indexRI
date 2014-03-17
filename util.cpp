@@ -77,7 +77,7 @@ bool arquivoExiste(const string nomeArquivo){
     return false;
 }
 
-void para_codigo_gamma(unsigned int x,unsigned int& y,unsigned int& ny){
+void para_codigo_gamma(unsigned int x,unsigned long int& y,unsigned int& ny){
     ny = 0;
     unsigned int tmpx = x;
     //int lpiso = floor(log2(x));
@@ -135,7 +135,7 @@ unsigned int gamma_para_int(deque<unsigned int>& x,unsigned int& nx,int pos){
 
     unsigned int cu;
     int tamx = x.size();
-
+    unsigned int f = x.front();
 
     cu = unario_para_int(x,pos);
 
@@ -206,10 +206,24 @@ unsigned int gamma_para_int(deque<unsigned int>& x,unsigned int& nx,int pos){
 
    // cout << " 1: " << y << endl << endl;
 
-    //verificando se acabou o buffer sem precisar particionar
-    if ((pos+1)!=nx){ 
-	x[0] = y;
+    if (qtd_bits_cb>0){
+        //verificando se acabou o ultimo buffer tratado pela parte binaria
+        if ((pos_cb-qtd_bits_cb)>=0){ 
+	   //cout << "Teste 1: " << pos_cb<< " "<< qtd_bits_cb<<" "<<nx<<" "<<y<<endl;
+	   //ainda tem bits a serem tratado e que estao em y
+	   x.pop_front();
+           x.push_front(y);
+        }
+        else{ 
+	    //cout << "Teste 2: " << pos_cb<< " "<< qtd_bits_cb<<" "<<nx<<" "<<y<<x.front()<<endl;
+	x.pop_front();
+       }
+    }else{
+	if (pos!=0){ 
+	   x.pop_front();
+           x.push_front(y);
+	}
+	else x.pop_front();
     }
-    else x.pop_front();
     return numeroint;
 }

@@ -107,7 +107,7 @@ int Le::ler_tripla(deque<unsigned int>& v,int nnum){
     if (arquivo.is_open()){
 
         pos_arquivo = floor(conta_bits/32);
-	cout << "parquivo 1: " << (4*pos_arquivo) << endl;
+	//cout << "Conta_bits_leitura: " << conta_bits << endl;
 	arquivo.seekg(sizeof(int)*pos_arquivo,ios::beg);
 
 	t = clock();
