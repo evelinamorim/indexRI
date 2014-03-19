@@ -33,6 +33,7 @@ class Escreve{
     unsigned int* buffer;
     vector<int> pilha_buffer;
     string nome_arquivo;
+    ofstream arquivo;
 
     public:
     Escreve(string narquivo);
@@ -45,6 +46,7 @@ class Escreve{
 
     //metodos de escrita
     streampos escreve_tripla(vector<unsigned int> v);
+    void fecha_arquivo();
 
     //metodos virtuais puros
     virtual void escreve_numero(unsigned int x,int tam_buffer) =0;

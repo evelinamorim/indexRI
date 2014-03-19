@@ -24,6 +24,7 @@
 #include "util.h"
 
 #include <unordered_map>
+#include <queue>
 
 using namespace std;
 
@@ -38,6 +39,7 @@ typedef struct tripla{
 
 class Ordena{
     Le* leitura;
+    Le* leitura_run;
     Escreve* escrita;
     Escreve* escrita_ordenada;
     tripla_t* run;
@@ -47,7 +49,7 @@ class Ordena{
     int conta_triplas;
     streampos tamanho_arquivo;
 
-    tripla_t *buffer_ordenacao;
+    queue<tripla_t> *buffer_ordenacao;
 
     public:
     Ordena(string narquivo,bool compacta);
@@ -56,11 +58,11 @@ class Ordena{
     int carrega_run(int& pos_arquivo);
     void ordena_run(int tam_run);
     int escreve_run(int tam_run);
-    void ordena_todas_runs();
+    void ordena_todas_runs(unsigned long int* pos_prox);
     int compara_triplas(tripla_t a,tripla_t b);
     void merge_run(int i,int m,int f);
     void executa(Colecao& col);
-    void atualiza_buffer_ordenacao(int pos,unsigned long int* pos_prox);
+    void atualiza_buffer_ordenacao(int pos,unsigned long int* pos_prox,vector<unsigned long int> limites);
     void carrega_buffer_ordenacao(unsigned long int* pos_prox);
 };
 

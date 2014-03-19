@@ -29,17 +29,19 @@ using namespace std;
 Le::Le(string narquivo){
     conta_bits = 0;
     nome_arquivo = narquivo; 
+    inicia_tamanho_arquivo();
+}
 
+void Le::inicia_tamanho_arquivo(){
     ifstream arquivo(nome_arquivo,ios::in|ios::binary|ios::ate);
     if (arquivo.is_open()){
 	tamanho_arquivo = arquivo.tellg();
 	cout << "TAMANHO_ARQUIVO: "<<tamanho_arquivo<<endl;
 	arquivo.close();
     }else{
-	cout << "Ordena::carrega_run::Nao foi possivel abrir o arquivo.";
+	cout << "Ordena::carrega_run::Nao foi possivel abrir o arquivo."<< endl;
     }
 }
-
 
 void Le::inicia_nome_arquivo(string narquivo){
     nome_arquivo = narquivo;
@@ -213,7 +215,9 @@ LeCompacta::~LeCompacta(){}
 void LeCompacta::carrega_buffer(ifstream& arquivo,int nnum){
     //carrega buffer com os numeros a serem decodificados
 
-    buffer.clear();
+    deque<unsigned int> tmp;
+    tmp.swap(buffer);
+
 
     unsigned int *buf = new unsigned int[nnum+1]();
     streampos parquivo;

@@ -25,12 +25,15 @@ using namespace std;
 /* Metodos da classe Escreve */
 int conta_numeros = 0;
 //construtor
-Escreve::Escreve(string narquivo){
+Escreve::Escreve(string narquivo):arquivo(narquivo, ios::out|ios::binary|ios::app){
     conta_bits = 0;
     conta_bits_global = 0;
     nome_arquivo = narquivo;
 }
 
+void Escreve::fecha_arquivo(){
+    arquivo.close();
+}
 
 
 void Escreve::inicia_conta_bits(unsigned long int cb){
@@ -51,7 +54,6 @@ string Escreve::pega_nome_arquivo(){
 
 streampos Escreve::escreve_tripla(vector<unsigned int> v){
     
-    ofstream arquivo (nome_arquivo, ios::out|ios::binary|ios::app);
     
     streampos pos_arquivo;
     
@@ -72,7 +74,7 @@ streampos Escreve::escreve_tripla(vector<unsigned int> v){
         
         pos_arquivo = arquivo.tellp();
         
-        arquivo.close();
+        //arquivo.close();
     }else{
         cout << "Colecao::escreve_tripla::Unable to open file" << endl;
     }

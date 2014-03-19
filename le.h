@@ -37,6 +37,7 @@ class Le{
     virtual ~Le(){};
     //metodos de get's e set's
     void inicia_nome_arquivo(string narquivo);
+    void inicia_tamanho_arquivo();
     void inicia_conta_bits(unsigned int cb);
     unsigned long int pega_conta_bits();
 

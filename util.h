@@ -30,7 +30,10 @@
 #define MAIOR_PALAVRA 20
 #define TAM_VOC 20000000
 //TODO: depois mudar este tamanho. No momento eh soh para teste
-#define TAMANHO_RUN 1000000
+#define TAMANHO_RUN 10000000
+#define QTD_RUNS 5000
+
+#define TAM_BUFFER_ORD 100000
 
 using namespace std;
 

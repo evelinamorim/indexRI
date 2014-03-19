@@ -37,8 +37,8 @@ int testepalavras = 0;
 using namespace std;
 using namespace RICPNS;
 
-const string Colecao::nome_arquivo_indice="index.bin";
-const string Colecao::nome_arquivo_vocabulario="voc.txt";
+const string Colecao::nome_arquivo_indice="index_compacta.bin";
+const string Colecao::nome_arquivo_vocabulario="voc_compacta.txt";
 
 Colecao::~Colecao(){
 
@@ -103,6 +103,7 @@ void Colecao::ler(string dirEntrada,string nomeIndice){
         if (escrita->pega_excedente()!=0)
 	    escrita->escreve_excedente();
     }
+    escrita->fecha_arquivo();
 
     delete leitor;
 }
@@ -230,7 +231,7 @@ void Colecao::armazena_termos_doc(unordered_map<int,vector<int> >&  termos_pos,i
             v.push_back(it_termo->first);
 	    v.push_back(doc);
             v.push_back(*it_pos);
-	    //cout << "==> " << *it_pos << " " << doc << " "  << it_termo->first << endl;
+	   //cout << "==> " <<it_termo->first  << " " << doc << " "  << *it_pos << endl;
 
        
 	   //  vector<unsigned int>().swap(v);
